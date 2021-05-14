@@ -13,6 +13,7 @@
 // Sets default values for this component's properties
 UTPSCameraComponent::UTPSCameraComponent()
 	: m_IsHit(false)
+	, m_IsHitCanLockOnActor(false)
 	, m_IsLockOn(false)
 	, m_LockOnActor(nullptr)
 	, m_CameraComponent(nullptr)
@@ -64,28 +65,33 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	FVector forwardVec = UKismetMathLibrary::GetForwardVector(m_CameraComponent->GetComponentRotation()) * m_RayLength;
 	FVector end = start + forwardVec + m_RayOffset;
 
+	// レイの当たっているものに応じてレイの色を変更
+	FColor lineColor;
+
+	if (m_IsLockOn)
+	{
+		lineColor = m_LockOnRayColor;
+		m_IsHitCanLockOnActor = true;
+	}
+	else if (m_HitResult.GetActor() == nullptr)
+	{
+		lineColor = m_NoLockOnRayColor;
+		m_IsHitCanLockOnActor = false;
+	}
+	else if (m_HitResult.GetActor()->ActorHasTag(m_LockOnTag))
+	{
+		lineColor = m_HitRayColor;
+		m_IsHitCanLockOnActor = true;
+	}
+	else
+	{
+		lineColor = m_NoLockOnRayColor;
+		m_IsHitCanLockOnActor = false;
+	}
+
 	// デバッグ確認用のラインを描画
 	if (m_IsDrawDebugLine)
 	{
-		FColor lineColor;
-
-		if (m_IsLockOn)
-		{
-			lineColor = m_LockOnRayColor;
-		}
-		else if (m_HitResult.GetActor() == nullptr)
-		{
-			lineColor = m_NoLockOnRayColor;
-		}
-		else if (m_HitResult.GetActor()->ActorHasTag(m_LockOnTag))
-		{
-			lineColor = m_HitRayColor;
-		}
-		else
-		{
-			lineColor = m_NoLockOnRayColor;
-		}
-		
 		DrawDebugLine(GetWorld(), start, end, lineColor, false, m_DrawDebugLineTime);
 	}
 

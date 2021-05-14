@@ -13,8 +13,8 @@ UMagnetComponent::UMagnetComponent()
 	, m_IsAttractPlayer(false)
 	, m_TargetActorLocation(FVector::ZeroVector)
 	, m_AttractPower(10.0f)
-	, m_AttractPlayerTagName("")
-	, m_AttractObjectTagName("")
+	, m_AttractPlayerTagName("A")
+	, m_AttractObjectTagName("B")
 	, m_playerOriginGravityScale(0.0f)
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -106,7 +106,14 @@ void UMagnetComponent::SwitchAttract()
 void UMagnetComponent::Init(UTPSCameraComponent* _TPSCameraComponent)
 {
 	m_TPSCamera = _TPSCameraComponent;
-	m_playerOriginGravityScale = m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->GravityScale;
+
+	if (m_TPSCamera != nullptr)
+	{
+		m_playerOriginGravityScale = m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->GravityScale;
+	}
+	else
+	{
+	}
 }
 
 

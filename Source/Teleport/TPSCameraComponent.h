@@ -33,6 +33,9 @@ private:
 	// レイがほかのActorにあたっているか
 	bool m_IsHit;
 
+	// レイがロックオン可能なActorに当たっているか
+	bool m_IsHitCanLockOnActor;
+
 	// レイが当たった結果
 	FHitResult m_HitResult;
 
@@ -56,7 +59,11 @@ public:
 
 	// m_IsHit取得用
 	UFUNCTION(BlueprintPure)
-		bool GetIsHit() { return m_IsHit; } 
+		bool GetIsHit() { return m_IsHit; }
+
+	//m_IsHitCanLockOnActor取得用
+	UFUNCTION(BlueprintPure)
+		bool GetIsHitCanLockOnActor() { return m_IsHitCanLockOnActor; }
 
 	// m_IsLockOn取得用
 	UFUNCTION(BlueprintPure)
