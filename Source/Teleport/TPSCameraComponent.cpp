@@ -22,6 +22,7 @@ UTPSCameraComponent::UTPSCameraComponent()
 	, m_DrawDebugLineTime(0.5f)
 	, m_LockOnRayColor(FColor::Red)
 	, m_NoLockOnRayColor(FColor::Green)
+	, m_HitRayColor(FColor::Blue)
 	, m_RayLength(5000.0f)
 	, m_RayOffset(FVector::ZeroVector)
 	, m_DisableLockOnLength(100.0f)
@@ -65,7 +66,7 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// デバッグ確認用のラインを描画
 	if (m_IsDrawDebugLine)
 	{
-		FColor lineColor = m_IsLockOn ? m_LockOnRayColor : m_NoLockOnRayColor;
+		FColor lineColor = m_IsLockOn ? m_LockOnRayColor : m_IsHit ? m_HitRayColor : m_NoLockOnRayColor;
 		DrawDebugLine(GetWorld(), start, end, lineColor, false, m_DrawDebugLineTime);
 	}
 
@@ -106,6 +107,7 @@ void UTPSCameraComponent::LockOn()
 		return;
 	}
 
+	UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] Lock-on Actor is \"%s\"."), *m_LockOnActor->GetName());
 	FVector targetLocation = m_LockOnActor->GetActorLocation();
 	FRotator rot = UKismetMathLibrary::FindLookAtRotation(m_CameraComponent->GetComponentLocation(), targetLocation);
 

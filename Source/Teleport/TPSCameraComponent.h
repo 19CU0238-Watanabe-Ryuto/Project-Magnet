@@ -56,7 +56,15 @@ public:
 
 	// m_IsHit取得用
 	UFUNCTION(BlueprintPure)
-		bool GetIsHit() { return m_IsHit; }
+		bool GetIsHit() { return m_IsHit; } 
+
+	// m_IsLockOn取得用
+	UFUNCTION(BlueprintPure)
+		bool GetIsLockOn() { return m_IsLockOn; }
+
+	// m_LockOnActor取得用
+	UFUNCTION(BlueprintPure)
+		AActor* GetIsLockOnActor() { return m_LockOnActor; }
 
 	// m_CameraComponent取得用
 	UFUNCTION(BlueprintPure)
@@ -87,6 +95,10 @@ public:
 	// デバッグ用レイの非ロックオン時の色
 	UPROPERTY(EditAnyWhere, Category = "Debug")
 		FColor m_NoLockOnRayColor;
+
+	// デバッグ用レイの他Actorとのヒット時の色
+	UPROPERTY(EditAnyWhere, Category = "Debug")
+		FColor m_HitRayColor;
 
 	// レイの距離
 	UPROPERTY(EditAnyWhere)
