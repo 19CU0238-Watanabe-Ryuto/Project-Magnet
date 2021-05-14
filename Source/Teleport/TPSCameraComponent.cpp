@@ -26,6 +26,7 @@ UTPSCameraComponent::UTPSCameraComponent()
 	, m_RayLength(5000.0f)
 	, m_RayOffset(FVector::ZeroVector)
 	, m_DisableLockOnLength(100.0f)
+	, m_LockOnTag("CanLockOn")
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -66,7 +67,25 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// デバッグ確認用のラインを描画
 	if (m_IsDrawDebugLine)
 	{
-		FColor lineColor = m_IsLockOn ? m_LockOnRayColor : m_IsHit ? m_HitRayColor : m_NoLockOnRayColor;
+		FColor lineColor;
+
+		if (m_IsLockOn)
+		{
+			lineColor = m_LockOnRayColor;
+		}
+		else if (m_HitResult.GetActor() == nullptr)
+		{
+			lineColor = m_NoLockOnRayColor;
+		}
+		else if (m_HitResult.GetActor()->ActorHasTag(m_LockOnTag))
+		{
+			lineColor = m_HitRayColor;
+		}
+		else
+		{
+			lineColor = m_NoLockOnRayColor;
+		}
+		
 		DrawDebugLine(GetWorld(), start, end, lineColor, false, m_DrawDebugLineTime);
 	}
 
@@ -131,10 +150,18 @@ void UTPSCameraComponent::SwitchLockOn()
 
 	if (m_IsLockOn)
 	{
+		// レイの当たっているActorを保持
 		m_LockOnActor = m_HitResult.GetActor();
 
+		// Actorを取得できていない
 		if (m_LockOnActor == nullptr)
 		{
+			m_IsLockOn = false;
+		}
+		// ロックオン出来ないActorであれば処理を終了
+		else if (!m_LockOnActor->ActorHasTag(m_LockOnTag))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] Lock-on enable tag is not set for the Actor who tried to lock-on."));
 			m_IsLockOn = false;
 		}
 	}

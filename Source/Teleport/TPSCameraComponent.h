@@ -112,6 +112,10 @@ public:
 	UPROPERTY(EditAnyWhere)
 		float m_DisableLockOnLength;
 
+	// ロックオンできるActorにつけるタグ名
+	UPROPERTY(EditAnyWhere)
+		FName m_LockOnTag;
+
 private:
 	// ロックオン処理関数
 	void LockOn();

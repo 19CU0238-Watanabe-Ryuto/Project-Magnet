@@ -116,6 +116,8 @@ void UMagnetComponent::Attract(float _DeltaTime)
 	// 引き寄せ状態でなければ終了
 	if (!m_IsAttract)
 	{
+		// 停止状態の解除
+		m_IsFreeze = false;
 		return;
 	}
 
@@ -126,6 +128,9 @@ void UMagnetComponent::Attract(float _DeltaTime)
 
 		// 引き寄せを解除
 		m_IsAttract = false;
+
+		// 停止状態の解除
+		m_IsFreeze = false;
 
 		// 位置のリセット
 		m_TargetActorLocation = FVector::ZeroVector;
