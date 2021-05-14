@@ -1,11 +1,11 @@
 // TPS視点でのカメラの制御・管理を行うクラス
 //
-// 2021/05/10 渡邊龍音 作成・レイを画面中央に飛ばし当たり判定をとる
+// 2021/05/10 渡邊龍音 作成・レイを画面中央に飛ばし当たり判定をとる（TPSCameraComponentBPからの移行）
 // 2021/05/11 渡邊龍音 カメラのロックオンを作成
+// 2021/05/12 渡邊龍音 ロックオン対象と一定の距離以内に入った場合、ロックオンを解除する
 
 #include "TPSCameraComponent.h"
 #include "Camera/CameraComponent.h"
-#include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
@@ -20,17 +20,13 @@ UTPSCameraComponent::UTPSCameraComponent()
 	, m_EnableLineTrace(true)
 	, m_IsDrawDebugLine(true)
 	, m_DrawDebugLineTime(0.5f)
+	, m_LockOnRayColor(FColor::Red)
+	, m_NoLockOnRayColor(FColor::Green)
 	, m_RayLength(5000.0f)
 	, m_RayOffset(FVector::ZeroVector)
+	, m_DisableLockOnLength(100.0f)
 {
 	PrimaryComponentTick.bCanEverTick = true;
-}
-
-
-// Called when the game starts
-void UTPSCameraComponent::BeginPlay()
-{
-	Super::BeginPlay();	
 }
 
 
@@ -48,7 +44,14 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// カメラコンポーネント未設定の場合、ログを表示し関数を終了
 	if (m_CameraComponent == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] camera is null."));
+		UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] Camera is null."));
+		return;
+	}
+
+	// プレイヤーコンポーネント未設定の場合、ログを表示し関数を終了
+	if (m_PlayerCharacter == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] PlayerCharacter is null."));
 		return;
 	}
 
@@ -62,7 +65,8 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// デバッグ確認用のラインを描画
 	if (m_IsDrawDebugLine)
 	{
-		DrawDebugLine(GetWorld(), start, end, FColor::Green, false, m_DrawDebugLineTime);
+		FColor lineColor = m_IsLockOn ? m_LockOnRayColor : m_NoLockOnRayColor;
+		DrawDebugLine(GetWorld(), start, end, lineColor, false, m_DrawDebugLineTime);
 	}
 
 	// レイを飛ばし当たり判定を取る
@@ -79,7 +83,7 @@ void UTPSCameraComponent::LockOn()
 	// ロックオン状態でなければ処理を終了
 	if (!m_IsLockOn)
 	{
-		UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] Is not Lock-On."));
+		UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] Is not lock-On."));
 		return;
 	}
 
@@ -87,6 +91,18 @@ void UTPSCameraComponent::LockOn()
 	if (m_LockOnActor == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] LockOnActor is nullptr."));
+		return;
+	}
+
+	FVector playerPos(m_PlayerCharacter->GetActorLocation().X, m_PlayerCharacter->GetActorLocation().Y, 0.0f);
+	FVector targetPos(m_LockOnActor->GetActorLocation().X, m_LockOnActor->GetActorLocation().Y, 0.0f);
+	float targetDistance = (playerPos - targetPos).Size();
+
+	// ロックオン対象との距離が設定値以下であればロックオン状態を解除し処理を終了
+	if (targetDistance < m_DisableLockOnLength)
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] Player got within a certain distance, so player disabled lock-on."));
+		//m_IsLockOn = false;
 		return;
 	}
 
@@ -115,13 +131,9 @@ void UTPSCameraComponent::SwitchLockOn()
 	{
 		m_LockOnActor = m_HitResult.GetActor();
 
-		if (m_LockOnActor != nullptr)
+		if (m_LockOnActor == nullptr)
 		{
-			UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] LockOnActor name : %s ."), *m_LockOnActor->GetName());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] LockOnActor is nullptr."));
+			m_IsLockOn = false;
 		}
 	}
 	else
