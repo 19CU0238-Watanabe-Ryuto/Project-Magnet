@@ -3,6 +3,8 @@
 // 2021/05/10 渡邊龍音 作成・レイを画面中央に飛ばし当たり判定をとる（TPSCameraComponentBPからの移行）
 // 2021/05/11 渡邊龍音 カメラのロックオンを作成
 // 2021/05/12 渡邊龍音 ロックオン対象と一定の距離以内に入った場合、ロックオンを解除する
+// 2021/05/14 渡邊龍音 ロックオン可能タグがついたもののみロックオン可能にする
+// 2021/05/17 渡邊龍音 カメラの向いている方向のベクトルを取得できるようにする
 
 #include "TPSCameraComponent.h"
 #include "Camera/CameraComponent.h"
@@ -64,6 +66,9 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// レイ終了位置
 	FVector forwardVec = UKismetMathLibrary::GetForwardVector(m_CameraComponent->GetComponentRotation()) * m_RayLength;
 	FVector end = start + forwardVec + m_RayOffset;
+
+	// カメラの方向ベクトル格納
+	m_CameraVector = end - start;
 
 	// レイの当たっているものに応じてレイの色を変更
 	FColor lineColor;

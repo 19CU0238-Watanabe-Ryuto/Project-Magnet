@@ -3,6 +3,8 @@
 // 2021/05/10 渡邊龍音 作成・レイを画面中央に飛ばし当たり判定をとる（TPSCameraComponentBPからの移行）
 // 2021/05/11 渡邊龍音 カメラのロックオンを作成
 // 2021/05/12 渡邊龍音 ロックオン対象と一定の距離以内に入った場合、ロックオンを解除する
+// 2021/05/14 渡邊龍音 ロックオン可能タグがついたもののみロックオン可能にする
+// 2021/05/17 渡邊龍音 カメラの向いている方向のベクトルを取得できるようにする
 
 #pragma once
 
@@ -39,6 +41,9 @@ private:
 	// レイが当たった結果
 	FHitResult m_HitResult;
 
+	// カメラの向いているベクトル
+	FVector m_CameraVector;
+
 	// ロックオンしているか
 	bool m_IsLockOn;
 
@@ -53,10 +58,6 @@ private:
 
 // private変数読み取り用関数
 public:
-	// m_HitResult取得用
-	UFUNCTION(BlueprintPure)
-		FHitResult GetHitResult() { return m_HitResult; }
-
 	// m_IsHit取得用
 	UFUNCTION(BlueprintPure)
 		bool GetIsHit() { return m_IsHit; }
@@ -64,6 +65,23 @@ public:
 	//m_IsHitCanLockOnActor取得用
 	UFUNCTION(BlueprintPure)
 		bool GetIsHitCanLockOnActor() { return m_IsHitCanLockOnActor; }
+
+	// m_HitResult取得用
+	UFUNCTION(BlueprintPure)
+		FHitResult GetHitResult() { return m_HitResult; }
+
+	// m_CameraVector取得用
+	UFUNCTION(BlueprintPure)
+		FVector GetCameraVectorRaw() { return m_CameraVector; }
+
+	// m_CameraVector取得用（正規化）
+	UFUNCTION(BlueprintPure)
+		FVector GetCameraVectorNormalized()
+	{
+		FVector normal = m_CameraVector;
+		normal.Normalize();
+		return normal;
+	}
 
 	// m_IsLockOn取得用
 	UFUNCTION(BlueprintPure)
