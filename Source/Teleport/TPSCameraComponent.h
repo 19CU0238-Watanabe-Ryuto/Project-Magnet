@@ -33,6 +33,9 @@ private:
 	// レイがほかのActorにあたっているか
 	bool m_IsHit;
 
+	// レイがロックオン可能なActorに当たっているか
+	bool m_IsHitCanLockOnActor;
+
 	// レイが当たった結果
 	FHitResult m_HitResult;
 
@@ -57,6 +60,18 @@ public:
 	// m_IsHit取得用
 	UFUNCTION(BlueprintPure)
 		bool GetIsHit() { return m_IsHit; }
+
+	//m_IsHitCanLockOnActor取得用
+	UFUNCTION(BlueprintPure)
+		bool GetIsHitCanLockOnActor() { return m_IsHitCanLockOnActor; }
+
+	// m_IsLockOn取得用
+	UFUNCTION(BlueprintPure)
+		bool GetIsLockOn() { return m_IsLockOn; }
+
+	// m_LockOnActor取得用
+	UFUNCTION(BlueprintPure)
+		AActor* GetIsLockOnActor() { return m_LockOnActor; }
 
 	// m_CameraComponent取得用
 	UFUNCTION(BlueprintPure)
@@ -88,6 +103,10 @@ public:
 	UPROPERTY(EditAnyWhere, Category = "Debug")
 		FColor m_NoLockOnRayColor;
 
+	// デバッグ用レイの他Actorとのヒット時の色
+	UPROPERTY(EditAnyWhere, Category = "Debug")
+		FColor m_HitRayColor;
+
 	// レイの距離
 	UPROPERTY(EditAnyWhere)
 		float m_RayLength;
@@ -99,6 +118,10 @@ public:
 	// ロックオンを無効化するオブジェクトとの距離
 	UPROPERTY(EditAnyWhere)
 		float m_DisableLockOnLength;
+
+	// ロックオンできるActorにつけるタグ名
+	UPROPERTY(EditAnyWhere)
+		FName m_LockOnTag;
 
 private:
 	// ロックオン処理関数
