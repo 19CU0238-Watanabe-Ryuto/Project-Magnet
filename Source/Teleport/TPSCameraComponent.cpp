@@ -5,6 +5,7 @@
 // 2021/05/12 渡邊龍音 ロックオン対象と一定の距離以内に入った場合、ロックオンを解除する
 // 2021/05/14 渡邊龍音 ロックオン可能タグがついたもののみロックオン可能にする
 // 2021/05/17 渡邊龍音 カメラの向いている方向のベクトルを取得できるようにする
+//					   プレイヤーとオブジェクトの距離がレイの距離以上になったらロックオン解除するように
 
 #include "TPSCameraComponent.h"
 #include "Camera/CameraComponent.h"
@@ -129,6 +130,14 @@ void UTPSCameraComponent::LockOn()
 	FVector targetPos(m_LockOnActor->GetActorLocation().X, m_LockOnActor->GetActorLocation().Y, 0.0f);
 	float targetDistance = (playerPos - targetPos).Size();
 
+	// ロックオンしているオブジェクトとの距離がレイの距離以上になったらロックオン状態解除
+	if (targetDistance >= m_RayLength)
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] Player disabled lock-on because the distance between the player and the object is longer than RayLength."));
+		m_IsLockOn = false;
+		return;
+	}
+
 	// ロックオン対象との距離が設定値以下であればロックオン状態を解除し処理を終了
 	if (targetDistance < m_DisableLockOnLength)
 	{
@@ -176,8 +185,32 @@ void UTPSCameraComponent::SwitchLockOn()
 			m_IsLockOn = false;
 		}
 	}
-	else
+}
+
+
+// ロックオン状態を解除する関数
+void UTPSCameraComponent::DisableLockOn(bool isResetLockOnActor/* = false*/)
+{
+	m_IsLockOn = false;
+
+	if (isResetLockOnActor)
 	{
 		m_LockOnActor = nullptr;
+	}
+}
+
+
+// 再度ロックオン状態にする関数
+bool UTPSCameraComponent::LockOnAgain()
+{
+	if (m_IsLockOn == false && m_LockOnActor != nullptr)
+	{
+		m_IsLockOn = true;
+		return true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] Could not reset to lock-on state because LockOnActor is not enabled or already lock-on."));
+		return false;
 	}
 }

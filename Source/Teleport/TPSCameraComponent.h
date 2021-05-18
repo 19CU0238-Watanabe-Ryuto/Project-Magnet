@@ -148,8 +148,8 @@ private:
 public:
 	// 初期化関数
 	// 
-	// 第一引数...対象になるカメラコンポーネント
-	// 第二引数...対象になるキャラクター
+	// 第一引数...UCameraComponent* 対象になるカメラコンポーネント
+	// 第二引数...ACharacter*		対象になるキャラクター
 	UFUNCTION(BlueprintCallable)
 		void Init(UCameraComponent* _camera, ACharacter* _character);
 
@@ -158,4 +158,17 @@ public:
 	// 引数なし
 	UFUNCTION(BlueprintCallable)
 		void SwitchLockOn();
+
+	// ロックオン状態を解除する関数
+	//
+	// 第一引数...bool	trueでロックオンActorをリセット
+	UFUNCTION(BlueprintCallable)
+		void DisableLockOn(bool isResetLockOnActor = false);
+
+	// 再度ロックオン状態にする関数
+	// 戻り値...再設定できたかどうか
+	//
+	// 引数なし
+	UFUNCTION(BlueprintCallable)
+		bool LockOnAgain();
 };
