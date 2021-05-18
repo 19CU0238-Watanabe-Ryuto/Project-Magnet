@@ -35,7 +35,7 @@ public:
 	//
 	//
 	UFUNCTION(BlueprintCallable)
-		void AddScore(int _score)
+		void AddScore(int _score = 1)
 	{
 		m_Score += _score;
 	}
