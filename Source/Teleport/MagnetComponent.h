@@ -3,6 +3,8 @@
 // 2021/05/12 - 5/13 渡邊龍音 MagnetComponentBPからの移行
 // 2021/05/14		 渡邊龍音 オブジェクトの引き寄せを行う
 // 2021/05/16 - 5/17 渡邊龍音 自身・オブジェクトの反発を行う
+// 2021/05/17		 渡邊龍音 引き寄せの処理をVInterpからAddForceに変更
+//							  能力使用時にロックオンを解除するように
 
 #pragma once
 
@@ -29,6 +31,9 @@ private:
 	// TPSCameraComponent
 	UTPSCameraComponent* m_TPSCamera;
 
+	// ロックオンしたActorのStaticMesh
+	UStaticMeshComponent* m_LockOnActorStaticMesh;
+
 	// 引き寄せ状態であるか
 	bool m_IsAttract;
 
@@ -45,7 +50,7 @@ private:
 	float m_playerOriginGravityScale;
 
 	// 引き寄せ移動する時の対象Actorの位置
-	FVector m_TargetActorLocation;
+	//FVector m_TargetActorLocation;
 
 	// private変数取得用
 public:
