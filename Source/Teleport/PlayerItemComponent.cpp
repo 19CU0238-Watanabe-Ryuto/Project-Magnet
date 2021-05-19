@@ -1,5 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// プレイヤーがアイテムを取得するためのクラス
+//
+// 2021/05/19 渡邊龍音 スコアを管理できる
 
 #include "PlayerItemComponent.h"
 

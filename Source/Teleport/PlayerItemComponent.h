@@ -1,6 +1,6 @@
 // プレイヤーがアイテムを取得するためのクラス
 //
-// 2021/05/18 渡邊龍音 カメラの向いている方向のベクトルを取得できるようにする
+// 2021/05/19 渡邊龍音 スコアを管理できる
 
 #pragma once
 
@@ -35,9 +35,9 @@ public:
 	//
 	//
 	UFUNCTION(BlueprintCallable)
-		void AddScore(int _score = 1)
+		void AddScore(int _addScore = 1)
 	{
-		m_Score += _score;
+		m_Score += _addScore;
 	}
 
 	// スコア取得関数
