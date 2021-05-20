@@ -234,6 +234,11 @@ void UMagnetComponent::Attract(float _DeltaTime)
 	// プレイヤーを引き寄せる
 	if (m_IsTargetOfAbilityPlayer)
 	{
+		if (m_TPSCamera->GetPlayerCharacter() == nullptr || m_TPSCamera->GetIsLockOnActor() == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] TPSCamera->Playercharacter or TPSCamera->LockOnActor is nullptr."))
+		}
+
 		// オブジェクトとプレイヤーの距離計測
 		float length = (m_TPSCamera->GetPlayerCharacter()->GetActorLocation() - m_TPSCamera->GetIsLockOnActor()->GetActorLocation()).Size();
 
