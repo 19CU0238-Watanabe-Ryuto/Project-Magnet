@@ -89,7 +89,7 @@ public:
 
 	// m_LockOnActorŽæ“¾—p
 	UFUNCTION(BlueprintPure)
-		AActor* GetIsLockOnActor() { return m_LockOnActor; }
+		AActor* GetLockOnActor() { return m_LockOnActor; }
 
 	// m_CameraComponentŽæ“¾—p
 	UFUNCTION(BlueprintPure)
