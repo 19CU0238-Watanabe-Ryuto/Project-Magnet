@@ -34,6 +34,9 @@ private:
 	// ロックオンしたActorのStaticMesh
 	UStaticMeshComponent* m_LockOnActorStaticMesh;
 
+	// 磁力能力で引き寄せを行ったときに固定するオブジェクトの位置
+	UStaticMeshComponent* m_AttractFloatingPoint;
+
 	// 引き寄せ状態であるか
 	bool m_IsAttract;
 
@@ -91,7 +94,7 @@ public:
 	//
 	// 第一引数...キャラクターについているTPSCameraComponent
 	UFUNCTION(BlueprintCallable)
-		void Init(UTPSCameraComponent* _TPSCameraComponent);
+		void Init(UTPSCameraComponent* _TPSCameraComponent, UStaticMeshComponent* _attractFloatingPoint);
 
 	// 引き寄せ状態切り替え関数
 	//
