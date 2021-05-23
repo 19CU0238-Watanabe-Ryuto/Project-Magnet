@@ -182,6 +182,7 @@ void UTPSCameraComponent::SwitchLockOn()
 		else if (!m_LockOnActor->ActorHasTag(m_LockOnTag))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] Lock-on enable tag is not set for the Actor who tried to lock-on."));
+			m_LockOnActor = nullptr;
 			m_IsLockOn = false;
 		}
 	}

@@ -34,8 +34,17 @@ private:
 	// TPSCameraComponent
 	UTPSCameraComponent* m_TPSCamera;
 
+	// 能力で移動するActor
+	AActor* m_SmallerPlayerActor;
+
+	// 能力で移動しないActor
+	AActor* m_GreaterPlayerActor;
+
 	// ロックオンしたActorのStaticMesh
 	UStaticMeshComponent* m_LockOnActorStaticMesh;
+
+	// 能力で移動するActorのStaticMesh
+	UStaticMeshComponent* m_SmallerActorStaticMesh;
 
 	// 磁力能力で引き寄せを行ったときに固定するオブジェクトの位置
 	UStaticMeshComponent* m_AttractFloatingPoint;
@@ -49,8 +58,11 @@ private:
 	// 停止状態であるか
 	bool m_IsFreeze;
 
-	// 能力の対象がプレイヤーか（能力でプレイヤーが動くかオブジェクトが動くか）
-	bool m_IsTargetOfAbilityPlayer;
+	// オブジェクトを追従させている状態か
+	bool m_IsAttractObject;
+
+	// 反発能力の対象がプレイヤーか（能力でプレイヤーが動くかオブジェクトが動くか）
+	bool m_IsRepulsionOfAbilityPlayer;
 
 	// プレイヤーのもともとのgravityScale
 	float m_playerOriginGravityScale;
