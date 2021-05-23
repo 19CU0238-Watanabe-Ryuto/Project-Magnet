@@ -5,6 +5,9 @@
 // 2021/05/16 - 5/17 渡邊龍音 自身・オブジェクトの反発を行う
 // 2021/05/17		 渡邊龍音 引き寄せの処理をVInterpからAddForceに変更
 //							  能力使用時にロックオンを解除するように
+// 2020/05/21		 渡邊龍音 能力の移動をVInterpに戻す
+// 2020/05/24		 渡邊龍音 引き寄せのデフォ値を変更
+//							  引き寄せ・反発のプロパティをプレイヤー用とオブジェクト用に分ける
 
 #pragma once
 
@@ -62,13 +65,21 @@ public:
 		bool GetIsFreeze() { return m_IsFreeze; }
 
 public:
-	// 引き寄せる力
+	// プレイヤーを引き寄せる力
 	UPROPERTY(EditAnyWhere)
-		float m_AttractPower;
+		float m_AttractPlayerPower;
 
-	// 反発する力
+	// オブジェクトを引き寄せる力
 	UPROPERTY(EditAnyWhere)
-		float m_RepulsionPower;
+		float m_AttractObjectPower;
+
+	// オブジェクトに対してプレイヤーが反発する力
+	UPROPERTY(EditAnyWhere)
+		float m_RepulsionPlayerPower;
+
+	// プレイヤーがオブジェクトを反発させる力
+	UPROPERTY(EditAnyWhere)
+		float m_RepulsionObjectPower;
 
 	//  能力の対象がプレイヤーの時のオブジェクトのタグ名
 	UPROPERTY(EditAnyWhere)

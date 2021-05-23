@@ -6,6 +6,8 @@
 // 2021/05/17		 渡邊龍音 引き寄せの処理をVInterpからAddForceに変更
 //							  能力使用時にロックオンを解除するように
 // 2020/05/21		 渡邊龍音 能力の移動をVInterpに戻す
+// 2020/05/24		 渡邊龍音 引き寄せのデフォ値を変更
+//							  引き寄せ・反発のプロパティをプレイヤー用とオブジェクト用に分ける
 
 #include "MagnetComponent.h"
 #include "TPSCameraComponent.h"
@@ -22,8 +24,10 @@ UMagnetComponent::UMagnetComponent()
 	, m_IsFreeze(false)
 	, m_IsTargetOfAbilityPlayer(false)
 	//, m_TargetActorLocation(FVector::ZeroVector)
-	, m_AttractPower(5000000.0f)
-	, m_RepulsionPower(20000000.0f)
+	, m_AttractPlayerPower(5.0f)
+	, m_AttractObjectPower(5.0f)
+	, m_RepulsionPlayerPower(20000000.0f)
+	, m_RepulsionObjectPower(20000000.0f)
 	, m_TargetOfAbilityPlayerTagName("A")
 	, m_TargetOfAbilityObjectTagName("B")
 	, m_playerOriginGravityScale(0.0f)
@@ -265,7 +269,7 @@ void UMagnetComponent::Attract(float _DeltaTime)
 		}
 		else
 		{
-			FVector lerpPos = UKismetMathLibrary::VInterpTo(m_TPSCamera->GetPlayerCharacter()->GetActorLocation(), m_TPSCamera->GetLockOnActor()->GetActorLocation(), _DeltaTime, m_AttractPower);
+			FVector lerpPos = UKismetMathLibrary::VInterpTo(m_TPSCamera->GetPlayerCharacter()->GetActorLocation(), m_TPSCamera->GetLockOnActor()->GetActorLocation(), _DeltaTime, m_AttractPlayerPower);
 			m_TPSCamera->GetPlayerCharacter()->SetActorLocation(lerpPos);
 		}		
 	}
@@ -293,7 +297,7 @@ void UMagnetComponent::Attract(float _DeltaTime)
 			return;
 		}
 
-		FVector lerpPos = UKismetMathLibrary::VInterpTo(m_TPSCamera->GetLockOnActor()->GetActorLocation(), m_AttractFloatingPoint->GetComponentLocation(), _DeltaTime, m_AttractPower);
+		FVector lerpPos = UKismetMathLibrary::VInterpTo(m_TPSCamera->GetLockOnActor()->GetActorLocation(), m_AttractFloatingPoint->GetComponentLocation(), _DeltaTime, m_AttractObjectPower);
 		m_TPSCamera->GetLockOnActor()->SetActorLocation(lerpPos);
 		m_LockOnActorStaticMesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector, false);
 	}
@@ -325,14 +329,14 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 		// プレイヤーを反発させる
 		if (m_IsTargetOfAbilityPlayer)
 		{
-			m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddForce(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPower);
+			m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddForce(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerPower);
 		}
 		// オブジェクトを反発させる
 		else
 		{
 			if (m_LockOnActorStaticMesh != nullptr)
 			{
-				m_LockOnActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPower);
+				m_LockOnActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionObjectPower);
 			}
 			else
 			{
