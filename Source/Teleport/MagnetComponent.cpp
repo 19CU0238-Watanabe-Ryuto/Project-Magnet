@@ -356,6 +356,8 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 		if (m_SmallerActorStaticMesh != nullptr)
 		{
 			m_SmallerActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionObjectPower);
+
+			m_SmallerActorStaticMesh = nullptr;
 			m_IsAttractObject = false;
 		}
 	}
@@ -365,7 +367,10 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 		if (m_IsRepulsionOfAbilityPlayer)
 		{
 			m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddForce(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerPower);
+
+			m_GreaterPlayerActor = nullptr;
 		}
+		/*
 		// オブジェクトを反発させる
 		else
 		{
@@ -377,7 +382,7 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Don't Get ProjectileMovementComponent."));
 			}
-		}
+		}*/
 	}
 	m_IsRepulsion = false;
 }
