@@ -121,6 +121,9 @@ void UMagnetComponent::SwitchAttract()
 			// オブジェクト引き寄せ状態にする
 			m_IsAttractObject = true;
 
+			// 引き寄せているオブジェクトを一時的にロックオン不可能にする
+			m_TPSCamera->SetCantLockOnActor(m_SmallerPlayerActor);
+
 			// 引き寄せ状態を切る
 			m_IsAttract = false;
 
@@ -170,14 +173,14 @@ void UMagnetComponent::SwitchRepulsion()
 	// 反発状態ならActorの位置の保存
 	if (m_IsRepulsion)
 	{
-		/*
 		// ロックオン状態でなければ終了
-		if (!m_TPSCamera->GetIsLockOn())
+		if (!m_TPSCamera->GetIsLockOn() && !m_IsAttractObject)
 		{
 			UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] The Repulsion button was pressed but not lock-on."));
+
 			m_IsRepulsion = false;
 			return;
-		}*/
+		}
 
 		// ロックオン解除
 		m_TPSCamera->DisableLockOn();
@@ -356,7 +359,12 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 		if (m_SmallerActorStaticMesh != nullptr)
 		{
 			m_SmallerActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionObjectPower);
+
+			m_SmallerActorStaticMesh = nullptr;
 			m_IsAttractObject = false;
+
+			// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
+			m_TPSCamera->SetCantLockOnActor(nullptr);
 		}
 	}
 	else
@@ -365,7 +373,10 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 		if (m_IsRepulsionOfAbilityPlayer)
 		{
 			m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddForce(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerPower);
+
+			m_GreaterPlayerActor = nullptr;
 		}
+		/*
 		// オブジェクトを反発させる
 		else
 		{
@@ -377,7 +388,7 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Don't Get ProjectileMovementComponent."));
 			}
-		}
+		}*/
 	}
 	m_IsRepulsion = false;
 }
@@ -386,20 +397,11 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 // 当たった時に呼ぶ関数
 void UMagnetComponent::Hit(AActor* _hitActor)
 {
-	// 引き寄せ中にオブジェクトに当たって支えた時用
-	static float moveValue = 10.0f;
-
 	if (m_IsAttract == true && m_GreaterPlayerActor != nullptr && m_GreaterPlayerActor == _hitActor)
 	{
 		FVector loc = m_TPSCamera->GetPlayerCharacter()->GetActorLocation();
-		loc.Z += moveValue;
+		loc.Z += 100.0f;
 
 		m_TPSCamera->GetPlayerCharacter()->SetActorLocation(loc);
-
-		moveValue += moveValue;
-	}
-	else
-	{
-		moveValue = 10.0f;
 	}
 }

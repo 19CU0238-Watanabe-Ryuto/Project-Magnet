@@ -5,6 +5,9 @@
 // 2021/05/12 渡邊龍音 ロックオン対象と一定の距離以内に入った場合、ロックオンを解除する
 // 2021/05/14 渡邊龍音 ロックオン可能タグがついたもののみロックオン可能にする
 // 2021/05/17 渡邊龍音 カメラの向いている方向のベクトルを取得できるようにする
+//					   プレイヤーとオブジェクトの距離がレイの距離以上になったらロックオン解除するように
+// 2021/05/24 渡邊龍音 ロックオン可能オブジェクトでも一時的にロックオン不可にする機能を追加
+
 
 #pragma once
 
@@ -49,6 +52,9 @@ private:
 
 	// ロックオン時のActor
 	AActor* m_LockOnActor;
+
+	// 一時的にロックオン不可にするActor
+	AActor* m_CantLockOnActor;
 
 	// カメラコンポーネント
 	UCameraComponent* m_CameraComponent;
@@ -171,4 +177,14 @@ public:
 	// 引数なし
 	UFUNCTION(BlueprintCallable)
 		bool LockOnAgain();
+
+	// ロックオン不可Actorの設定
+	// 戻り値...再設定できたかどうか
+	//
+	// 引数なし
+	UFUNCTION(BlueprintCallable)
+		void SetCantLockOnActor(AActor* _cantLockOnActor)
+	{
+		m_CantLockOnActor = _cantLockOnActor;
+	}
 };
