@@ -8,6 +8,9 @@
 // 2020/05/21		 渡邊龍音 能力の移動をVInterpに戻す
 // 2020/05/24		 渡邊龍音 引き寄せのデフォ値を変更
 //							  引き寄せ・反発のプロパティをプレイヤー用とオブジェクト用に分ける
+//							  オブジェクト引き寄せ状態でプレイヤーの引き寄せを可能にする
+//							  プレイヤーを引き寄せるときに足元の位置を参照
+//							  移動のやりやすさを向上
 
 #pragma once
 
@@ -39,6 +42,9 @@ private:
 
 	// 能力で移動しないActor
 	AActor* m_GreaterPlayerActor;
+
+	// プレイヤーの足元の位置のSceneComponent
+	USceneComponent* m_PlayerAnchor;
 
 	// ロックオンしたActorのStaticMesh
 	UStaticMeshComponent* m_LockOnActorStaticMesh;
@@ -117,7 +123,7 @@ public:
 	//
 	// 第一引数...キャラクターについているTPSCameraComponent
 	UFUNCTION(BlueprintCallable)
-		void Init(UTPSCameraComponent* _TPSCameraComponent, UStaticMeshComponent* _attractFloatingPoint);
+		void Init(UTPSCameraComponent* _TPSCameraComponent, UStaticMeshComponent* _attractFloatingPoint, USceneComponent* _playerFoot);
 
 	// 引き寄せ状態切り替え関数
 	//
