@@ -34,7 +34,7 @@ UMagnetComponent::UMagnetComponent()
 	//, m_TargetActorLocation(FVector::ZeroVector)
 	, m_AttractPlayerPower(5.0f)
 	, m_AttractObjectPower(5.0f)
-	, m_RepulsionPlayerPower(40000000.0f)
+	, m_RepulsionPlayerPower(15000000.0f)
 	, m_RepulsionObjectPower(40000000.0f)
 	, m_TargetOfAbilityPlayerTagName("A")
 	, m_TargetOfAbilityObjectTagName("B")
@@ -202,7 +202,7 @@ void UMagnetComponent::SwitchRepulsion()
 		{
 			// 能力使用地点のプレイヤーの位置を目標地点として保存
 			//m_TargetActorLocation = m_TPSCamera->GetPlayerCharacter()->GetActorLocation();
-			// 
+			//
 			// ロックオンしたオブジェクトを保存
 			m_SmallerPlayerActor = m_TPSCamera->GetLockOnActor();
 
@@ -344,53 +344,42 @@ void UMagnetComponent::Attract(float _DeltaTime)
 // 反発処理関数
 void UMagnetComponent::Repulsion(float _DeltaTime)
 {
-	// 一度のみAddForceするため
-	static bool isOnce = true;
-
 	// 反発状態でなければ終了
 	if (!m_IsRepulsion)
 	{
-		isOnce = true;
 		return;
 	}
 
-	if (isOnce)
+	// オブジェクトを保持している
+	if (m_IsAttractObject)
 	{
-		isOnce = false;
-		// オブジェクトを保持している
-		if (m_IsAttractObject)
+		if (m_SmallerActorStaticMesh != nullptr)
 		{
-			if (m_SmallerActorStaticMesh != nullptr)
-			{
-				m_SmallerActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionObjectPower);
-				m_IsAttractObject = false;
-				m_IsRepulsion = false;
-				isOnce = true;
-			}
+			m_SmallerActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionObjectPower);
+			m_IsAttractObject = false;
 		}
+	}
+	else
+	{
+		// プレイヤーを反発させる
+		if (m_IsRepulsionOfAbilityPlayer)
+		{
+			m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddForce(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerPower);
+		}
+		// オブジェクトを反発させる
 		else
 		{
-			// プレイヤーを反発させる
-			if (m_IsRepulsionOfAbilityPlayer)
+			if (m_LockOnActorStaticMesh != nullptr)
 			{
-				m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddForce(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerPower);
+				m_LockOnActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionObjectPower);
 			}
-			// オブジェクトを反発させる
 			else
 			{
-				if (m_LockOnActorStaticMesh != nullptr)
-				{
-					m_LockOnActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionObjectPower);
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Don't Get ProjectileMovementComponent."));
-					m_IsRepulsion = false;
-					isOnce = true;
-				}
+				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Don't Get ProjectileMovementComponent."));
 			}
 		}
 	}
+	m_IsRepulsion = false;
 }
 
 
