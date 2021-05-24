@@ -6,6 +6,7 @@
 // 2021/05/14 渡邊龍音 ロックオン可能タグがついたもののみロックオン可能にする
 // 2021/05/17 渡邊龍音 カメラの向いている方向のベクトルを取得できるようにする
 //					   プレイヤーとオブジェクトの距離がレイの距離以上になったらロックオン解除するように
+// 2021/05/24 渡邊龍音 ロックオン可能オブジェクトでも一時的にロックオン不可にする機能を追加
 
 #include "TPSCameraComponent.h"
 #include "Camera/CameraComponent.h"
@@ -19,6 +20,7 @@ UTPSCameraComponent::UTPSCameraComponent()
 	, m_IsHitCanLockOnActor(false)
 	, m_IsLockOn(false)
 	, m_LockOnActor(nullptr)
+	, m_CantLockOnActor(nullptr)
 	, m_CameraComponent(nullptr)
 	, m_PlayerCharacter(nullptr)
 	, m_EnableLineTrace(true)
@@ -182,6 +184,13 @@ void UTPSCameraComponent::SwitchLockOn()
 		else if (!m_LockOnActor->ActorHasTag(m_LockOnTag))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] Lock-on enable tag is not set for the Actor who tried to lock-on."));
+			m_LockOnActor = nullptr;
+			m_IsLockOn = false;
+		}
+		// 一時的にロックオン出来ないActorであれば処理を終了
+		else if (m_LockOnActor == m_CantLockOnActor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] This Actor(%s) is temporarily unable to lock on."), *m_LockOnActor->GetName());
 			m_LockOnActor = nullptr;
 			m_IsLockOn = false;
 		}

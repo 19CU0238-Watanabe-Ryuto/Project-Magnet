@@ -121,6 +121,9 @@ void UMagnetComponent::SwitchAttract()
 			// オブジェクト引き寄せ状態にする
 			m_IsAttractObject = true;
 
+			// 引き寄せているオブジェクトを一時的にロックオン不可能にする
+			m_TPSCamera->SetCantLockOnActor(m_SmallerPlayerActor);
+
 			// 引き寄せ状態を切る
 			m_IsAttract = false;
 
@@ -359,6 +362,9 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 
 			m_SmallerActorStaticMesh = nullptr;
 			m_IsAttractObject = false;
+
+			// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
+			m_TPSCamera->SetCantLockOnActor(nullptr);
 		}
 	}
 	else
@@ -391,20 +397,11 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 // 当たった時に呼ぶ関数
 void UMagnetComponent::Hit(AActor* _hitActor)
 {
-	// 引き寄せ中にオブジェクトに当たって支えた時用
-	static float moveValue = 10.0f;
-
 	if (m_IsAttract == true && m_GreaterPlayerActor != nullptr && m_GreaterPlayerActor == _hitActor)
 	{
 		FVector loc = m_TPSCamera->GetPlayerCharacter()->GetActorLocation();
-		loc.Z += moveValue;
+		loc.Z += 100.0f;
 
 		m_TPSCamera->GetPlayerCharacter()->SetActorLocation(loc);
-
-		moveValue += moveValue;
-	}
-	else
-	{
-		moveValue = 10.0f;
 	}
 }
