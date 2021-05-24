@@ -82,6 +82,10 @@ public:
 	UFUNCTION(BlueprintPure)
 		bool GetIsFreeze() { return m_IsFreeze; }
 
+	// m_IsAttract取得用
+	UFUNCTION(BlueprintPure)
+		bool GetIsAttract() { return m_IsAttract; }
+
 public:
 	// プレイヤーを引き寄せる力
 	UPROPERTY(EditAnyWhere)
