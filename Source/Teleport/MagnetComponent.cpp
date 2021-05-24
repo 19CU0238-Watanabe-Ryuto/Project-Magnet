@@ -170,14 +170,14 @@ void UMagnetComponent::SwitchRepulsion()
 	// 反発状態ならActorの位置の保存
 	if (m_IsRepulsion)
 	{
-		/*
 		// ロックオン状態でなければ終了
-		if (!m_TPSCamera->GetIsLockOn())
+		if (!m_TPSCamera->GetIsLockOn() && !m_IsAttractObject)
 		{
 			UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] The Repulsion button was pressed but not lock-on."));
+
 			m_IsRepulsion = false;
 			return;
-		}*/
+		}
 
 		// ロックオン解除
 		m_TPSCamera->DisableLockOn();
