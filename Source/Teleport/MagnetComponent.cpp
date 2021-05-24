@@ -8,6 +8,9 @@
 // 2020/05/21		 渡邊龍音 能力の移動をVInterpに戻す
 // 2020/05/24		 渡邊龍音 引き寄せのデフォ値を変更
 //							  引き寄せ・反発のプロパティをプレイヤー用とオブジェクト用に分ける
+//							  オブジェクト引き寄せ状態でプレイヤーの引き寄せを可能にする
+//							  プレイヤーを引き寄せるときに足元の位置を参照
+//							  移動のやりやすさを向上
 
 #include "MagnetComponent.h"
 #include "TPSCameraComponent.h"
@@ -19,6 +22,7 @@ UMagnetComponent::UMagnetComponent()
 	: m_TPSCamera(nullptr)
 	, m_SmallerPlayerActor(nullptr)
 	, m_GreaterPlayerActor(nullptr)
+	, m_PlayerAnchor(nullptr)
 	, m_LockOnActorStaticMesh(nullptr)
 	, m_SmallerActorStaticMesh(nullptr)
 	, m_AttractFloatingPoint(nullptr)
@@ -101,7 +105,7 @@ void UMagnetComponent::SwitchAttract()
 			m_GreaterPlayerActor = m_TPSCamera->GetLockOnActor();
 
 			// プレイヤーの重力を0にする
-			m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->GravityScale = 0.0f;
+			//m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->GravityScale = 0.0f;
 
 			UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] Move Player (Attract)"));
 		}
@@ -128,6 +132,7 @@ void UMagnetComponent::SwitchAttract()
 		// 能力の対象にはならない
 		else
 		{
+			m_IsAttract = false;
 		}
 	}
 	else
@@ -151,12 +156,13 @@ void UMagnetComponent::SwitchRepulsion()
 		return;
 	}
 
+	/*
 	// ロックオン対象Actorがなければ終了
 	if (m_TPSCamera->GetLockOnActor() == nullptr)
 	{
 		UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] The Repulsion button was pressed but LockOnActor is nullptr."));
 		return;
-	}
+	}*/
 
 	// 反発状態切り替え
 	m_IsRepulsion = !m_IsRepulsion;
@@ -164,19 +170,20 @@ void UMagnetComponent::SwitchRepulsion()
 	// 反発状態ならActorの位置の保存
 	if (m_IsRepulsion)
 	{
+		/*
 		// ロックオン状態でなければ終了
 		if (!m_TPSCamera->GetIsLockOn())
 		{
 			UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] The Repulsion button was pressed but not lock-on."));
 			m_IsRepulsion = false;
 			return;
-		}
+		}*/
 
 		// ロックオン解除
 		m_TPSCamera->DisableLockOn();
 
 		// 能力対象がプレイヤーを移動させるものの場合
-		if (m_TPSCamera->GetLockOnActor()->ActorHasTag(m_TargetOfAbilityPlayerTagName))
+		if (m_TPSCamera->GetLockOnActor() != nullptr && m_TPSCamera->GetLockOnActor()->ActorHasTag(m_TargetOfAbilityPlayerTagName))
 		{
 			// ロックオンしたオブジェクト位置を反発の基準点として保存
 			//m_TargetActorLocation = m_TPSCamera->GetIsLockOnActor()->GetActorLocation();
@@ -210,7 +217,6 @@ void UMagnetComponent::SwitchRepulsion()
 		// 能力の対象にはならない
 		else
 		{
-
 		}*/
 	}
 	else
@@ -225,10 +231,11 @@ void UMagnetComponent::SwitchRepulsion()
 
 
 // 初期化関数
-void UMagnetComponent::Init(UTPSCameraComponent* _TPSCameraComponent, UStaticMeshComponent* _attractFloatingPoint)
+void UMagnetComponent::Init(UTPSCameraComponent* _TPSCameraComponent, UStaticMeshComponent* _attractFloatingPoint, USceneComponent* _playerFoot)
 {
 	m_TPSCamera = _TPSCameraComponent;
 	m_AttractFloatingPoint = _attractFloatingPoint;
+	m_PlayerAnchor = _playerFoot;
 
 	if (m_TPSCamera != nullptr)
 	{
@@ -272,6 +279,9 @@ void UMagnetComponent::Attract(float _DeltaTime)
 		m_SmallerActorStaticMesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector, false);
 	}
 
+	// 重力をつける
+	m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->GravityScale = m_playerOriginGravityScale;
+
 	// 引き寄せ状態でなければ終了
 	if (!m_IsAttract)
 	{
@@ -289,14 +299,14 @@ void UMagnetComponent::Attract(float _DeltaTime)
 	}
 
 	// プレイヤー引き寄せ
-	if (m_TPSCamera->GetPlayerCharacter() == nullptr || m_GreaterPlayerActor == nullptr)
+	if (m_PlayerAnchor == nullptr || m_GreaterPlayerActor == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] TPSCamera->Playercharacter or TPSCamera->LockOnActor is nullptr."));
+		UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] PlayerFoot or TPSCamera->LockOnActor is nullptr."));
 		return;
 	}
 
-	// オブジェクトとプレイヤーの距離計測
-	float length = (m_TPSCamera->GetPlayerCharacter()->GetActorLocation() - m_GreaterPlayerActor->GetActorLocation()).Size();
+	// 重力をなくす
+	m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->GravityScale = 0.0f;
 
 	// プレイヤーとオブジェクトのバウンディングボックスのサイズ取得
 	FVector playerBound;
@@ -307,23 +317,18 @@ void UMagnetComponent::Attract(float _DeltaTime)
 
 	m_GreaterPlayerActor->GetActorBounds(true, tmp, objectBound);
 
-	float boundBoxLength = (playerBound + objectBound).Size();
+	// 目標地点の更新
+	FVector targetPos = m_GreaterPlayerActor->GetActorLocation();
+	targetPos.Z += objectBound.Z + playerBound.Z;
 
 	// 触れたら固定
-	if (length <= boundBoxLength)
+	if (m_TPSCamera->GetPlayerCharacter()->GetActorLocation().Equals(targetPos, 50.0f))
 	{
-		if (m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->IsFalling())
-		{
-			m_IsFreeze = true;
-		}
-		else
-		{
-			m_IsAttract = false;
-		}
+		m_IsAttract = false;
 	}
 	else
 	{
-		FVector lerpPos = UKismetMathLibrary::VInterpTo(m_TPSCamera->GetPlayerCharacter()->GetActorLocation(), m_GreaterPlayerActor->GetActorLocation(), _DeltaTime, m_AttractPlayerPower);
+		FVector lerpPos = UKismetMathLibrary::VInterpTo(m_PlayerAnchor->GetComponentLocation(), targetPos, _DeltaTime, m_AttractPlayerPower);
 		m_TPSCamera->GetPlayerCharacter()->SetActorLocation(lerpPos);
 	}
 
@@ -380,6 +385,8 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 				else
 				{
 					UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Don't Get ProjectileMovementComponent."));
+					m_IsRepulsion = false;
+					isOnce = true;
 				}
 			}
 		}
@@ -390,5 +397,20 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 // 当たった時に呼ぶ関数
 void UMagnetComponent::Hit(AActor* _hitActor)
 {
-	//m_IsFreeze = (_hitActor == m_TPSCamera->GetIsLockOnActor());
+	// 引き寄せ中にオブジェクトに当たって支えた時用
+	static float moveValue = 10.0f;
+
+	if (m_IsAttract == true && m_GreaterPlayerActor != nullptr && m_GreaterPlayerActor == _hitActor)
+	{
+		FVector loc = m_TPSCamera->GetPlayerCharacter()->GetActorLocation();
+		loc.Z += moveValue;
+
+		m_TPSCamera->GetPlayerCharacter()->SetActorLocation(loc);
+
+		moveValue += moveValue;
+	}
+	else
+	{
+		moveValue = 10.0f;
+	}
 }
