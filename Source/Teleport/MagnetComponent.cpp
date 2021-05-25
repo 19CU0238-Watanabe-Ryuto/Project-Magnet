@@ -322,7 +322,7 @@ void UMagnetComponent::Attract(float _DeltaTime)
 
 	// 目標地点の更新
 	FVector targetPos = m_GreaterPlayerActor->GetActorLocation();
-	targetPos.Z += objectBound.Z + playerBound.Z;
+	targetPos.Z += (objectBound.Z * 2.0f) + playerBound.Z;
 
 	// 触れたら固定
 	if (m_TPSCamera->GetPlayerCharacter()->GetActorLocation().Equals(targetPos, 50.0f))
