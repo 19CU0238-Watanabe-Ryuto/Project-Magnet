@@ -44,6 +44,9 @@ private:
 	// レイが当たった結果
 	FHitResult m_HitResult;
 
+	// レイの衝突判定パラメーター
+	FCollisionQueryParams m_CollisionParams;
+
 	// カメラの向いているベクトル
 	FVector m_CameraVector;
 
