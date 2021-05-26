@@ -11,6 +11,7 @@
 //							  オブジェクト引き寄せ状態でプレイヤーの引き寄せを可能にする
 //							  プレイヤーを引き寄せるときに足元の位置を参照
 //							  移動のやりやすさを向上
+// 2020/05/26		 渡邊龍音 ものを当てられた時の処理を追加
 
 #include "MagnetComponent.h"
 #include "TPSCameraComponent.h"
@@ -34,7 +35,8 @@ UMagnetComponent::UMagnetComponent()
 	//, m_TargetActorLocation(FVector::ZeroVector)
 	, m_AttractPlayerPower(5.0f)
 	, m_AttractObjectPower(5.0f)
-	, m_RepulsionPlayerPower(15000000.0f)
+	, m_RepulsionPlayerAmount(1500.0f)
+	, m_RepulsionPlayerSpeed(200000.0f)
 	, m_RepulsionObjectPower(40000000.0f)
 	, m_TargetOfAbilityPlayerTagName("A")
 	, m_TargetOfAbilityObjectTagName("B")
@@ -366,15 +368,38 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
 			m_TPSCamera->SetCantLockOnActor(nullptr);
 		}
+		m_IsRepulsion = false;
 	}
 	else
 	{
 		// プレイヤーを反発させる
 		if (m_IsRepulsionOfAbilityPlayer)
 		{
-			m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddForce(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerPower);
+			m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddImpulse(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerSpeed);
 
 			m_GreaterPlayerActor = nullptr;
+			m_IsRepulsion = false;
+			/*
+			static FVector targetPos = FVector::ZeroVector;
+			if (targetPos == FVector::ZeroVector)
+			{
+				targetPos = m_TPSCamera->GetPlayerCharacter()->GetActorLocation() + (-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerAmount);
+			}
+
+			FVector lerpPos = UKismetMathLibrary::VInterpTo(m_TPSCamera->GetPlayerCharacter()->GetActorLocation(), targetPos, _DeltaTime, m_RepulsionPlayerSpeed);
+
+			m_TPSCamera->GetPlayerCharacter()->SetActorLocation(lerpPos);
+
+			FVector playerPosXY = FVector(m_TPSCamera->GetPlayerCharacter()->GetActorLocation().X, m_TPSCamera->GetPlayerCharacter()->GetActorLocation().Y, 0.0f);
+			FVector targetPosXY = FVector(targetPos.X, targetPos.Y, 0.0f);
+
+
+			if (m_TPSCamera->GetPlayerCharacter()->GetActorLocation().Equals(targetPos), 1.0f)
+			{
+				targetPos = FVector::ZeroVector;
+				m_GreaterPlayerActor = nullptr;
+				m_IsRepulsion = false;
+			}*/
 		}
 		/*
 		// オブジェクトを反発させる
@@ -390,7 +415,6 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			}
 		}*/
 	}
-	m_IsRepulsion = false;
 }
 
 

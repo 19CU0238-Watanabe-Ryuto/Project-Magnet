@@ -7,6 +7,8 @@
 // 2021/05/17 渡邊龍音 カメラの向いている方向のベクトルを取得できるようにする
 //					   プレイヤーとオブジェクトの距離がレイの距離以上になったらロックオン解除するように
 // 2021/05/24 渡邊龍音 ロックオン可能オブジェクトでも一時的にロックオン不可にする機能を追加
+// 2021/05/26 渡邊龍音 自身にロックオン出来ないように
+//					   ロックオンの対象とする位置をどのオブジェクトであっても真ん中にする
 
 #include "TPSCameraComponent.h"
 #include "Camera/CameraComponent.h"
@@ -18,6 +20,7 @@
 UTPSCameraComponent::UTPSCameraComponent()
 	: m_IsHit(false)
 	, m_IsHitCanLockOnActor(false)
+	, m_CollisionParams(FCollisionQueryParams::DefaultQueryParam)
 	, m_IsLockOn(false)
 	, m_LockOnActor(nullptr)
 	, m_CantLockOnActor(nullptr)
@@ -31,12 +34,11 @@ UTPSCameraComponent::UTPSCameraComponent()
 	, m_HitRayColor(FColor::Blue)
 	, m_RayLength(5000.0f)
 	, m_RayOffset(FVector::ZeroVector)
-	, m_DisableLockOnLength(100.0f)
+	, m_DisableLockOnLength(0.0f)
 	, m_LockOnTag("CanLockOn")
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
-
 
 // Called every frame
 void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -104,7 +106,7 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	}
 
 	// レイを飛ばし当たり判定を取る
-	m_IsHit = GetWorld()->LineTraceSingleByChannel(m_HitResult, start, end, ECollisionChannel::ECC_Pawn);
+	m_IsHit = GetWorld()->LineTraceSingleByChannel(m_HitResult, start, end, ECollisionChannel::ECC_Pawn, m_CollisionParams);
 
 	// ロックオン処理
 	LockOn();
@@ -128,6 +130,12 @@ void UTPSCameraComponent::LockOn()
 		return;
 	}
 
+	// バウンディングボックス取得
+	FVector targetOrigin;
+	FVector targetExtent;
+
+	m_LockOnActor->GetActorBounds(true, targetOrigin, targetExtent);
+
 	FVector playerPos(m_PlayerCharacter->GetActorLocation().X, m_PlayerCharacter->GetActorLocation().Y, 0.0f);
 	FVector targetPos(m_LockOnActor->GetActorLocation().X, m_LockOnActor->GetActorLocation().Y, 0.0f);
 	float targetDistance = (playerPos - targetPos).Size();
@@ -149,8 +157,9 @@ void UTPSCameraComponent::LockOn()
 	}
 
 	UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] Lock-on Actor is \"%s\"."), *m_LockOnActor->GetName());
-	FVector targetLocation = m_LockOnActor->GetActorLocation();
-	FRotator rot = UKismetMathLibrary::FindLookAtRotation(m_CameraComponent->GetComponentLocation(), targetLocation);
+
+	//FVector targetLocation = m_LockOnActor->GetActorLocation();
+	FRotator rot = UKismetMathLibrary::FindLookAtRotation(m_CameraComponent->GetComponentLocation(), targetOrigin);
 
 	m_PlayerCharacter->GetController()->SetControlRotation(rot);
 }
@@ -161,6 +170,9 @@ void UTPSCameraComponent::Init(UCameraComponent* _camera, ACharacter* _character
 {
 	m_CameraComponent = _camera;
 	m_PlayerCharacter = _character;
+
+	// レイの衝突を自分自身のキャラクターに当たらないようにする
+	m_CollisionParams.AddIgnoredActor(_character);
 }
 
 
@@ -183,14 +195,21 @@ void UTPSCameraComponent::SwitchLockOn()
 		// ロックオン出来ないActorであれば処理を終了
 		else if (!m_LockOnActor->ActorHasTag(m_LockOnTag))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] Lock-on enable tag is not set for the Actor who tried to lock-on."));
+			UE_LOG(LogTemp, Log, TEXT("[TPSCameraComponent] Lock-on enable tag is not set for the Actor who tried to lock-on."));
 			m_LockOnActor = nullptr;
 			m_IsLockOn = false;
 		}
 		// 一時的にロックオン出来ないActorであれば処理を終了
 		else if (m_LockOnActor == m_CantLockOnActor)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] This Actor(%s) is temporarily unable to lock on."), *m_LockOnActor->GetName());
+			UE_LOG(LogTemp, Log, TEXT("[TPSCameraComponent] This Actor(%s) is temporarily unable to lock on."), *m_LockOnActor->GetName());
+			m_LockOnActor = nullptr;
+			m_IsLockOn = false;
+		}
+		// ロックオン対象が自分自身であれば処理を終了
+		else if (m_LockOnActor == GetPlayerCharacter())
+		{
+			UE_LOG(LogTemp, Log, TEXT("[TPSCameraComponent] The player himself is the target of lock-on"));
 			m_LockOnActor = nullptr;
 			m_IsLockOn = false;
 		}
