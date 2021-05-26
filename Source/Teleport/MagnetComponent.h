@@ -11,6 +11,7 @@
 //							  オブジェクト引き寄せ状態でプレイヤーの引き寄せを可能にする
 //							  プレイヤーを引き寄せるときに足元の位置を参照
 //							  移動のやりやすさを向上
+// 2020/05/26		 渡邊龍音 プレイヤーの反発の挙動変更
 
 #pragma once
 
@@ -95,9 +96,13 @@ public:
 	UPROPERTY(EditAnyWhere)
 		float m_AttractObjectPower;
 
-	// オブジェクトに対してプレイヤーが反発する力
+	// オブジェクトに対してどのぐらいプレイヤーが反発するか
 	UPROPERTY(EditAnyWhere)
-		float m_RepulsionPlayerPower;
+		float m_RepulsionPlayerAmount;
+
+	// オブジェクトに対してプレイヤーが反発する速度
+	UPROPERTY(EditAnyWhere)
+		float m_RepulsionPlayerSpeed;
 
 	// プレイヤーがオブジェクトを反発させる力
 	UPROPERTY(EditAnyWhere)
