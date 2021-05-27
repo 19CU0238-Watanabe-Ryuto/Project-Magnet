@@ -7,6 +7,9 @@
 // Sets default values for this component's properties
 UItemShootComponent::UItemShootComponent()
 	: m_IsShoot(false)
+	, m_BeginShootLocation(FVector::ZeroVector)
+	, m_NowDamage(0)
+	, m_InitialHitDamage(200)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -27,7 +30,36 @@ void UItemShootComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 
 // 撃ったときの関数
-void UItemShootComponent::SetIsShoot(bool _status)
+void UItemShootComponent::Shoot(FVector _shootPos)
 {
-	m_IsShoot = _status;
+	m_IsShoot = true;
+	m_BeginShootLocation = _shootPos;
+	m_NowDamage = m_InitialHitDamage;
+}
+
+
+// 距離減衰の計算
+int UItemShootComponent::AttenuationDamage(FVector _hitPos, float _attenuationDistance/* = 100.0f */, int _attenuationAmount/* = 1 */)
+{
+	float length = (_hitPos - m_BeginShootLocation).Size();
+
+	if (_attenuationDistance == 0.0f)
+	{
+		_attenuationDistance = length;
+	}
+
+	m_NowDamage -= (length / _attenuationDistance * _attenuationAmount);
+
+	return m_NowDamage;
+}
+
+// 壁にあたった時に撃ち出し位置・威力をを更新する関数
+int UItemShootComponent::HitAttenuationDamage(FVector _hitPos, float _attenuationRatio/* = 0.75f */, float _attenuationDistance/* = 100.0f */, int _attenuationAmount/* = 1 */)
+{
+	AttenuationDamage(_hitPos, _attenuationDistance, _attenuationAmount);
+	m_BeginShootLocation = _hitPos;
+
+	m_NowDamage *= _attenuationRatio;
+
+	return m_NowDamage;
 }

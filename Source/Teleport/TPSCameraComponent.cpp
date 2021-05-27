@@ -9,6 +9,7 @@
 // 2021/05/24 渡邊龍音 ロックオン可能オブジェクトでも一時的にロックオン不可にする機能を追加
 // 2021/05/26 渡邊龍音 自身にロックオン出来ないように
 //					   ロックオンの対象とする位置をどのオブジェクトであっても真ん中にする
+// 2021/05/27 渡邊龍音 他のコンポーネントからアクセスできるカメラの中央に向かうベクトルを取得できる関数を追加
 
 #include "TPSCameraComponent.h"
 #include "Camera/CameraComponent.h"
@@ -162,6 +163,41 @@ void UTPSCameraComponent::LockOn()
 	FRotator rot = UKismetMathLibrary::FindLookAtRotation(m_CameraComponent->GetComponentLocation(), targetOrigin);
 
 	m_PlayerCharacter->GetController()->SetControlRotation(rot);
+}
+
+
+// m_CameraVector取得用（正規化）
+FVector UTPSCameraComponent::GetCameraVectorOtherActor(FVector _originPos)
+{
+	if (m_CameraComponent != nullptr)
+	{
+		// レイ開始位置
+		FVector start = m_CameraComponent->GetComponentLocation();
+
+		// レイ終了位置
+		FVector forwardVec = UKismetMathLibrary::GetForwardVector(m_CameraComponent->GetComponentRotation()) * m_RayLength;
+		FVector end = start + forwardVec + m_RayOffset;
+
+		FVector vector = end - _originPos;
+
+		return vector;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] CameraComponent is nullptr."))
+		return FVector::ZeroVector;
+	}
+}
+
+
+// m_CameraVector取得用（正規化）
+UFUNCTION(BlueprintPure)
+FVector UTPSCameraComponent::GetCameraVectorNormalizedOtherActor(FVector _originPos)
+{
+	FVector normal = GetCameraVectorOtherActor(_originPos);
+	normal.Normalize();
+
+	return normal;
 }
 
 

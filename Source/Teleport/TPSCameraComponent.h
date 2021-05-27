@@ -91,6 +91,14 @@ public:
 		normal.Normalize();
 		return normal;
 	}
+	
+	// m_CameraVector取得用（正規化）
+	UFUNCTION(BlueprintPure)
+		FVector GetCameraVectorOtherActor(FVector _originPos);
+
+	// m_CameraVector取得用（正規化）
+	UFUNCTION(BlueprintPure)
+		FVector GetCameraVectorNormalizedOtherActor(FVector _originPos);
 
 	// m_IsLockOn取得用
 	UFUNCTION(BlueprintPure)
