@@ -12,6 +12,8 @@
 //							  プレイヤーを引き寄せるときに足元の位置を参照
 //							  移動のやりやすさを向上
 // 2020/05/26		 渡邊龍音 プレイヤーの反発の挙動変更
+//							  ものを当てられた時の処理を追加
+// 2020/05/28		 渡邊龍音 反発移動をチャージ式に変更
 
 #pragma once
 
@@ -62,6 +64,9 @@ private:
 	// 反発状態であるか
 	bool m_IsRepulsion;
 
+	// 反発ボタンを押しているか
+	bool m_IsPressed;
+
 	// 停止状態であるか
 	bool m_IsFreeze;
 
@@ -74,8 +79,11 @@ private:
 	// プレイヤーのもともとのgravityScale
 	float m_playerOriginGravityScale;
 
-	// 引き寄せ移動する時の対象Actorの位置
-	//FVector m_TargetActorLocation;
+	// 反発の力
+	float m_RepulsionPlayerPower;
+
+	// 反発のチャージ時間測定用
+	float m_RepulsionTimer;
 
 	// private変数取得用
 public:
@@ -96,13 +104,17 @@ public:
 	UPROPERTY(EditAnyWhere)
 		float m_AttractObjectPower;
 
-	// オブジェクトに対してどのぐらいプレイヤーが反発するか
+	// オブジェクトに対してプレイヤーが反発する最小の力
 	UPROPERTY(EditAnyWhere)
-		float m_RepulsionPlayerAmount;
+		float m_RepulsionPlayerPowerMin;
 
-	// オブジェクトに対してプレイヤーが反発する速度
+	// オブジェクトに対してプレイヤーが反発する最大の力
 	UPROPERTY(EditAnyWhere)
-		float m_RepulsionPlayerSpeed;
+		float m_RepulsionPlayerPowerMax;
+
+	// オブジェクトに対してプレイヤーが反発する最大の力
+	UPROPERTY(EditAnyWhere)
+		float m_RepulsionChargeTime;
 
 	// プレイヤーがオブジェクトを反発させる力
 	UPROPERTY(EditAnyWhere)
@@ -145,6 +157,12 @@ public:
 	//
 	UFUNCTION(BlueprintCallable)
 		void SwitchRepulsion();
+
+	// 反発ボタンを離した時の関数
+	//
+	//
+	UFUNCTION(BlueprintCallable)
+		void ReleaseRepulsion();
 
 	// 当たった時に呼ぶ関数
 	//
