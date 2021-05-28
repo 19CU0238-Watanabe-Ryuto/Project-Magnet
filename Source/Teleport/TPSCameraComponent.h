@@ -7,6 +7,9 @@
 // 2021/05/17 渡邊龍音 カメラの向いている方向のベクトルを取得できるようにする
 //					   プレイヤーとオブジェクトの距離がレイの距離以上になったらロックオン解除するように
 // 2021/05/24 渡邊龍音 ロックオン可能オブジェクトでも一時的にロックオン不可にする機能を追加
+// 2021/05/26 渡邊龍音 自身にロックオン出来ないように
+//					   ロックオンの対象とする位置をどのオブジェクトであっても真ん中にする
+// 2021/05/27 渡邊龍音 他のコンポーネントからアクセスできるカメラの中央に向かうベクトルを取得できる関数を追加
 
 
 #pragma once
@@ -91,6 +94,14 @@ public:
 		normal.Normalize();
 		return normal;
 	}
+	
+	// m_CameraVector取得用（正規化）
+	UFUNCTION(BlueprintPure)
+		FVector GetCameraVectorOtherActor(FVector _originPos);
+
+	// m_CameraVector取得用（正規化）
+	UFUNCTION(BlueprintPure)
+		FVector GetCameraVectorNormalizedOtherActor(FVector _originPos);
 
 	// m_IsLockOn取得用
 	UFUNCTION(BlueprintPure)
