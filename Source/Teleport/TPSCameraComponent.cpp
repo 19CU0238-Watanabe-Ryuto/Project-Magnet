@@ -280,3 +280,19 @@ bool UTPSCameraComponent::LockOnAgain()
 		return false;
 	}
 }
+
+
+// ロックオン位置の取得
+FVector UTPSCameraComponent::GetLockOnLocation()
+{
+	if (m_IsLockOn && m_LockOnActor != nullptr)
+	{
+		FVector targetOrigin;
+		FVector targetExtent;
+
+		m_LockOnActor->GetActorBounds(true, targetOrigin, targetExtent);
+
+		return targetOrigin;
+	}
+	return FVector::ZeroVector;
+}
