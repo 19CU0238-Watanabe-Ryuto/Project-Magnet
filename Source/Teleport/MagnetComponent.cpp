@@ -370,7 +370,7 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			// ƒƒbƒNƒIƒ“‚©‚Ç‚¤‚©
 			if (m_TPSCamera != nullptr && m_TPSCamera->GetIsLockOn() && m_TPSCamera->GetLockOnActor() != nullptr)
 			{
-				FVector vector = m_TPSCamera->GetLockOnActor()->GetActorLocation() - m_SmallerActorStaticMesh->GetComponentLocation();
+				FVector vector = m_TPSCamera->GetLockOnLocation() - m_SmallerActorStaticMesh->GetComponentLocation();
 				vector.Normalize();
 
 				m_SmallerActorStaticMesh->AddImpulse(vector * m_RepulsionObjectPower);

@@ -68,7 +68,7 @@ private:
 	// プレイヤーキャラクター
 	ACharacter* m_PlayerCharacter;
 
-// private変数読み取り用関数
+	// private変数読み取り用関数
 public:
 	// m_IsHit取得用
 	UFUNCTION(BlueprintPure)
@@ -94,7 +94,7 @@ public:
 		normal.Normalize();
 		return normal;
 	}
-	
+
 	// m_CameraVector取得用（正規化）
 	UFUNCTION(BlueprintPure)
 		FVector GetCameraVectorOtherActor(FVector _originPos);
@@ -201,4 +201,7 @@ public:
 	{
 		m_CantLockOnActor = _cantLockOnActor;
 	}
+
+	UFUNCTION(BlueprintCallable)
+		FVector GetLockOnLocation();
 };
