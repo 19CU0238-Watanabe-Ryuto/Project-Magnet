@@ -99,7 +99,7 @@ public:
 
 	// m_IsAttract取得用
 	UFUNCTION(BlueprintPure)
-		AActor* GetIsAttractActor() { return m_SmallerPlayerActor; }
+		AActor* GetAttractActor() { return m_SmallerPlayerActor; }
 
 public:
 	// プレイヤーを引き寄せる力
