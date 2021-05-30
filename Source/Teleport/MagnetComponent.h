@@ -48,9 +48,6 @@ private:
 	// 能力で移動しないActor
 	AActor* m_GreaterPlayerActor;
 
-	// プレイヤーの足元の位置のSceneComponent
-	USceneComponent* m_PlayerAnchor;
-
 	// ロックオンしたActorのStaticMesh
 	UStaticMeshComponent* m_LockOnActorStaticMesh;
 
@@ -157,7 +154,7 @@ public:
 	//
 	// 第一引数...キャラクターについているTPSCameraComponent
 	UFUNCTION(BlueprintCallable)
-		void Init(UTPSCameraComponent* _TPSCameraComponent, UStaticMeshComponent* _attractFloatingPoint, USceneComponent* _playerFoot);
+		void Init(UTPSCameraComponent* _TPSCameraComponent, UStaticMeshComponent* _attractFloatingPoint);
 
 	// 引き寄せ状態切り替え関数
 	//
@@ -199,4 +196,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void DisableAttractObject();
+
+	// オブジェクト引き寄せ状態を強制的に設定する
+
+	UFUNCTION(BlueprintCallable)
+		void SetAttractObject(AActor* _attractActor);
 };

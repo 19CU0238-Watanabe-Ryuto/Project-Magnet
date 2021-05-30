@@ -24,7 +24,6 @@ UMagnetComponent::UMagnetComponent()
 	: m_TPSCamera(nullptr)
 	, m_SmallerPlayerActor(nullptr)
 	, m_GreaterPlayerActor(nullptr)
-	, m_PlayerAnchor(nullptr)
 	, m_LockOnActorStaticMesh(nullptr)
 	, m_SmallerActorStaticMesh(nullptr)
 	, m_AttractFloatingPoint(nullptr)
@@ -246,18 +245,14 @@ void UMagnetComponent::ReleaseRepulsion()
 
 
 // 初期化関数
-void UMagnetComponent::Init(UTPSCameraComponent* _TPSCameraComponent, UStaticMeshComponent* _attractFloatingPoint, USceneComponent* _playerFoot)
+void UMagnetComponent::Init(UTPSCameraComponent* _TPSCameraComponent, UStaticMeshComponent* _attractFloatingPoint)
 {
 	m_TPSCamera = _TPSCameraComponent;
 	m_AttractFloatingPoint = _attractFloatingPoint;
-	m_PlayerAnchor = _playerFoot;
 
 	if (m_TPSCamera != nullptr)
 	{
 		m_playerOriginGravityScale = m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->GravityScale;
-	}
-	else
-	{
 	}
 }
 
@@ -314,7 +309,7 @@ void UMagnetComponent::Attract(float _DeltaTime)
 	}
 
 	// プレイヤー引き寄せ
-	if (m_PlayerAnchor == nullptr || m_GreaterPlayerActor == nullptr)
+	if (m_GreaterPlayerActor == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] PlayerFoot or TPSCamera->LockOnActor is nullptr."));
 		return;
@@ -328,8 +323,10 @@ void UMagnetComponent::Attract(float _DeltaTime)
 	FVector playerOrigin;
 	FVector objectBound;
 	FVector objectOrigin;
+	float sphereRadius;
 
-	m_TPSCamera->GetPlayerCharacter()->GetActorBounds(true, playerOrigin, playerBound, true);
+	//m_TPSCamera->GetPlayerCharacter()->GetActorBounds(true, playerOrigin, playerBound, true);
+	UKismetSystemLibrary::GetComponentBounds(m_TPSCamera->GetPlayerCharacter()->GetRootComponent(), playerOrigin, playerBound, sphereRadius);
 
 	m_GreaterPlayerActor->GetActorBounds(true, objectOrigin, objectBound, true);
 
@@ -381,7 +378,7 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			{
 				m_SmallerActorStaticMesh->AddImpulse(m_TPSCamera->GetCameraVectorNormalizedOtherActor(m_SmallerActorStaticMesh->GetComponentLocation()) * m_RepulsionObjectPower);
 			}
-			
+
 			UItemShootComponent* shootComp = Cast<UItemShootComponent>(m_SmallerPlayerActor->GetComponentByClass(UItemShootComponent::StaticClass()));
 
 			if (shootComp != nullptr)
@@ -391,8 +388,7 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Need to add an \"Item Shoot\" component to an Actor that can be repelled"))
-			}
-
+			}			
 			DisableAttractObject();
 		}
 		m_IsRepulsion = false;
@@ -496,4 +492,26 @@ void UMagnetComponent::DisableAttractObject()
 
 	// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
 	m_TPSCamera->SetCantLockOnActor(nullptr);
+}
+
+
+// オブジェクト引き寄せ状態を強制的に設定する
+void UMagnetComponent::SetAttractObject(AActor* _attractActor)
+{
+	// ロックオンしたオブジェクトを保存
+	m_SmallerPlayerActor = _attractActor;
+
+	// オブジェクト引き寄せ状態にする
+	m_IsAttractObject = true;
+
+	// 引き寄せているオブジェクトを一時的にロックオン不可能にする
+	m_TPSCamera->SetCantLockOnActor(m_SmallerPlayerActor);
+
+	// ロックオンActorのスタティックメッシュ取得
+	m_SmallerActorStaticMesh = Cast<UStaticMeshComponent>(_attractActor->GetRootComponent());
+
+	if (m_SmallerActorStaticMesh == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] The RootComponent of the Actor that can be attracted must be a StaticMeshComponent."))
+	}
 }

@@ -10,7 +10,8 @@
 // 2021/05/26 渡邊龍音 自身にロックオン出来ないように
 //					   ロックオンの対象とする位置をどのオブジェクトであっても真ん中にする
 // 2021/05/27 渡邊龍音 他のコンポーネントからアクセスできるカメラの中央に向かうベクトルを取得できる関数を追加
-
+// 2021/05/29 渡邊龍音 ロックオン対象を広げる
+// 2021/05/30 渡邊龍音 ロックオン対象をコライダーによって行うテスト
 
 #pragma once
 
@@ -23,6 +24,8 @@
 #include "TPSCameraComponent.generated.h"
 
 class UCameraComponent;
+class UBoxComponent;
+
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class TELEPORT_API UTPSCameraComponent : public UActorComponent
@@ -37,7 +40,16 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION()
+		void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+		void OnComponentOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 private:
+	// 当たり判定に使うスフィア
+	UBoxComponent* m_BoxComponent;
+
 	// レイがほかのActorにあたっているか
 	bool m_IsHit;
 
@@ -171,6 +183,10 @@ public:
 	UPROPERTY(EditAnyWhere)
 		FName m_LockOnTag;
 
+	// ボックスサイズ
+	UPROPERTY(EditAnyWhere)
+		FVector m_BoxCollisionSize;
+
 private:
 	// ロックオン処理関数
 	void LockOn();
@@ -181,7 +197,7 @@ public:
 	// 第一引数...UCameraComponent* 対象になるカメラコンポーネント
 	// 第二引数...ACharacter*		対象になるキャラクター
 	UFUNCTION(BlueprintCallable)
-		void Init(UCameraComponent* _camera, ACharacter* _character);
+		void Init(UCameraComponent* _camera, ACharacter* _character, UBoxComponent* _boxConponent);
 
 	// ロックオン状態にする関数
 	//

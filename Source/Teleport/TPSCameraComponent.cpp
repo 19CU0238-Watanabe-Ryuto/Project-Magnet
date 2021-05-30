@@ -11,9 +11,11 @@
 //					   ロックオンの対象とする位置をどのオブジェクトであっても真ん中にする
 // 2021/05/27 渡邊龍音 他のコンポーネントからアクセスできるカメラの中央に向かうベクトルを取得できる関数を追加
 // 2021/05/29 渡邊龍音 ロックオン対象を広げる
+// 2021/05/30 渡邊龍音 ロックオン対象をコライダーによって行うテスト
 
 #include "TPSCameraComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -21,7 +23,8 @@
 
 // Sets default values for this component's properties
 UTPSCameraComponent::UTPSCameraComponent()
-	: m_IsHit(false)
+	: m_BoxComponent(nullptr)
+	, m_IsHit(false)
 	, m_IsHitCanLockOnActor(false)
 	, m_CollisionParams(FCollisionQueryParams::DefaultQueryParam)
 	, m_IsLockOn(false)
@@ -41,6 +44,7 @@ UTPSCameraComponent::UTPSCameraComponent()
 	, m_RayOffset(FVector::ZeroVector)
 	, m_DisableLockOnLength(0.0f)
 	, m_LockOnTag("CanLockOn")
+	, m_BoxCollisionSize(FVector(100.0f, 100.0f, 100.0f))
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -199,6 +203,17 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 }
 
 
+void UTPSCameraComponent::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+}
+
+
+void UTPSCameraComponent::OnComponentOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+
+}
+
 // ロックオン処理関数
 void UTPSCameraComponent::LockOn()
 {
@@ -286,13 +301,29 @@ FVector UTPSCameraComponent::GetCameraVectorNormalizedOtherActor(FVector _origin
 
 
 // 初期化関数
-void UTPSCameraComponent::Init(UCameraComponent* _camera, ACharacter* _character)
+void UTPSCameraComponent::Init(UCameraComponent* _camera, ACharacter* _character, UBoxComponent* _boxConponent)
 {
 	m_CameraComponent = _camera;
 	m_PlayerCharacter = _character;
+	m_BoxComponent = _boxConponent;
 
 	// レイの衝突を自分自身のキャラクターに当たらないようにする
 	m_CollisionParams.AddIgnoredActor(_character);
+
+	if (m_BoxComponent != nullptr)
+	{
+		FVector tmpSize = m_BoxCollisionSize;
+		tmpSize.X = m_BoxCollisionSize.X / 2.0f;
+
+		FVector tmpLoc = m_BoxComponent->GetRelativeLocation();
+		tmpLoc.X += m_BoxCollisionSize.X / 2.0f;
+
+		m_BoxComponent->SetBoxExtent(tmpSize);
+		m_BoxComponent->SetRelativeLocation(tmpLoc);
+
+		m_BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &UTPSCameraComponent::OnOverlapBegin);
+		m_BoxComponent->OnComponentEndOverlap.AddDynamic(this, &UTPSCameraComponent::OnComponentOverlapEnd);
+	}
 
 	m_CanLockOnActorArray.Empty();
 	// ロックオン可能Actorをすべて配列に入れる
