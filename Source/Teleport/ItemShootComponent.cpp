@@ -1,12 +1,14 @@
 // 反発するオブジェクトを撃つ時のクラス
 //
 // 2021/05/26 渡邊龍音 撃ち出した時の関数を作成
+// 2021/05/30 渡邊龍音 誰が撃ち出したのか分かるように
 
 #include "ItemShootComponent.h"
 
 // Sets default values for this component's properties
 UItemShootComponent::UItemShootComponent()
 	: m_IsShoot(false)
+	, m_WhoShoot(nullptr)
 	, m_BeginShootLocation(FVector::ZeroVector)
 	, m_NowDamage(0)
 	, m_InitialHitDamage(200)
@@ -30,10 +32,11 @@ void UItemShootComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 
 // 撃ったときの関数
-void UItemShootComponent::Shoot(FVector _shootPos)
+void UItemShootComponent::Shoot(FVector _shootPos, AActor* _shootPlayer)
 {
 	m_IsShoot = true;
 	m_BeginShootLocation = _shootPos;
+	m_WhoShoot = _shootPlayer;
 	m_NowDamage = m_InitialHitDamage;
 }
 

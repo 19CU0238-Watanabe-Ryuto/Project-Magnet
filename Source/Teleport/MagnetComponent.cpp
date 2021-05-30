@@ -18,7 +18,6 @@
 #include "TPSCameraComponent.h"
 #include "ItemShootComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 
 // Sets default values for this component's properties
 UMagnetComponent::UMagnetComponent()
@@ -35,7 +34,9 @@ UMagnetComponent::UMagnetComponent()
 	, m_IsFreeze(false)
 	, m_IsAttractObject(false)
 	, m_IsRepulsionOfAbilityPlayer(false)
+	, m_IsAttractActorIsBall(false)
 	, m_RepulsionPlayerPower(0.0f)
+	, m_BallActor(nullptr)
 	, m_RepulsionTimer(0.0f)
 	, m_AttractPlayerPower(5.0f)
 	, m_AttractObjectPower(5.0f)
@@ -235,6 +236,7 @@ void UMagnetComponent::SwitchRepulsion()
 	}
 }
 
+
 // 反発ボタンを離した時の関数
 void UMagnetComponent::ReleaseRepulsion()
 {
@@ -379,26 +381,19 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			{
 				m_SmallerActorStaticMesh->AddImpulse(m_TPSCamera->GetCameraVectorNormalizedOtherActor(m_SmallerActorStaticMesh->GetComponentLocation()) * m_RepulsionObjectPower);
 			}
-
-			m_SmallerActorStaticMesh = nullptr;
 			
 			UItemShootComponent* shootComp = Cast<UItemShootComponent>(m_SmallerPlayerActor->GetComponentByClass(UItemShootComponent::StaticClass()));
 
 			if (shootComp != nullptr)
 			{
-				shootComp->Shoot(m_SmallerPlayerActor->GetActorLocation());
+				shootComp->Shoot(m_SmallerPlayerActor->GetActorLocation(), m_TPSCamera->GetPlayerCharacter());
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Need to add an \"Item Shoot\" component to an Actor that can be repelled"))
 			}
 
-			m_SmallerPlayerActor = nullptr;
-
-			m_IsAttractObject = false;
-
-			// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
-			m_TPSCamera->SetCantLockOnActor(nullptr);
+			DisableAttractObject();
 		}
 		m_IsRepulsion = false;
 	}
@@ -487,4 +482,18 @@ void UMagnetComponent::Hit(AActor* _hitActor)
 		m_IsAttract = false;
 		m_GreaterPlayerActor = nullptr;
 	}*/
+}
+
+
+// オブジェクト引き寄せ状態を解除する
+void UMagnetComponent::DisableAttractObject()
+{
+	m_SmallerActorStaticMesh = nullptr;
+
+	m_SmallerPlayerActor = nullptr;
+
+	m_IsAttractObject = false;
+
+	// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
+	m_TPSCamera->SetCantLockOnActor(nullptr);
 }

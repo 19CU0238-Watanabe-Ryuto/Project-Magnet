@@ -1,6 +1,7 @@
 // 反発するオブジェクトを撃つ時のクラス
 //
 // 2021/05/26 渡邊龍音 撃ち出した時の関数を作成
+// 2021/05/30 渡邊龍音 誰が撃ち出したのか分かるように
 
 #pragma once
 
@@ -27,6 +28,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	// 誰が撃ったのか
+	AActor* m_WhoShoot;
+
 	// 撃ち出した位置
 	FVector m_BeginShootLocation;
 
@@ -38,6 +42,12 @@ public:
 		int GetNowDamage()
 	{
 		return m_NowDamage;
+	}
+
+	UFUNCTION(BlueprintPure)
+		AActor* GetWhoShoot()
+	{
+		return m_WhoShoot;
 	}
 
 public:
@@ -52,7 +62,7 @@ public:
 	//
 	// 第一引数：オブジェクトを反発させた位置
 	UFUNCTION(BlueprintCallable)
-	void Shoot(FVector _shootPos);
+	void Shoot(FVector _shootPos, AActor* _shootPlayer);
 
 	// 距離減衰の計算
 	//

@@ -14,6 +14,8 @@
 // 2020/05/26		 渡邊龍音 プレイヤーの反発の挙動変更
 //							  ものを当てられた時の処理を追加
 // 2020/05/28		 渡邊龍音 反発移動をチャージ式に変更
+// 2020/05/30		 渡邊龍音 ボールActorを能力で持ったときにボール所持状態にする
+//							  オブジェクト引き寄せ状態を外部から解除できる関数を追加
 
 #pragma once
 
@@ -76,6 +78,9 @@ private:
 	// 反発能力の対象がプレイヤーか（能力でプレイヤーが動くかオブジェクトが動くか）
 	bool m_IsRepulsionOfAbilityPlayer;
 
+	// 持っているActorがボールActorが
+	bool m_IsAttractActorIsBall;
+
 	// プレイヤーのもともとのgravityScale
 	float m_playerOriginGravityScale;
 
@@ -94,6 +99,10 @@ public:
 	// m_IsAttract取得用
 	UFUNCTION(BlueprintPure)
 		bool GetIsAttract() { return m_IsAttract; }
+
+	// m_IsAttract取得用
+	UFUNCTION(BlueprintPure)
+		AActor* GetIsAttractActor() { return m_SmallerPlayerActor; }
 
 public:
 	// プレイヤーを引き寄せる力
@@ -127,6 +136,10 @@ public:
 	// 能力の対象がオブジェクトの時のオブジェクトのタグ名
 	UPROPERTY(EditAnyWhere)
 		FName m_TargetOfAbilityObjectTagName;
+
+	// ボールActor
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
+		TSubclassOf<AActor> m_BallActor;
 
 private:
 	// 引き寄せ処理関数
@@ -169,4 +182,21 @@ public:
 	//
 	UFUNCTION(BlueprintCallable)
 		void Hit(AActor* _hitActor);
+
+	// 引き寄せているActorがボールActorかどうか
+
+	UFUNCTION(BlueprintPure)
+		bool IsAttractObjectIsBallActor()
+	{
+		if (m_SmallerPlayerActor != nullptr)
+		{
+			return m_SmallerPlayerActor->GetClass() == m_BallActor;
+		}
+		return false;
+	}
+
+	// オブジェクト引き寄せ状態を解除する
+
+	UFUNCTION(BlueprintCallable)
+		void DisableAttractObject();
 };

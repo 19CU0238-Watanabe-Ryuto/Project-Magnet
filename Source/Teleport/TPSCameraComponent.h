@@ -68,6 +68,12 @@ private:
 	// プレイヤーキャラクター
 	ACharacter* m_PlayerCharacter;
 
+	// ロックオン可能Actorをすべて入れる
+	TArray<AActor*> m_CanLockOnActorArray;
+
+	// 一番近いロックオン可能な距離にあるロックオン可能Actor
+	AActor* m_NearCanLockOnActor;
+
 	// private変数読み取り用関数
 public:
 	// m_IsHit取得用
@@ -145,9 +151,13 @@ public:
 	UPROPERTY(EditAnyWhere, Category = "Debug")
 		FColor m_HitRayColor;
 
-	// レイの距離
+	// ロックオン可能になる最長の距離
 	UPROPERTY(EditAnyWhere)
-		float m_RayLength;
+		float m_CanLockOnLength;
+
+	// ロックオン可能になる最長の距離
+	UPROPERTY(EditAnyWhere, meta = (ClampMin = "0", ClampMax = "90.0"))
+		float m_CanLockOnDegree;
 
 	// レイのオフセット位置
 	UPROPERTY(EditAnyWhere)
@@ -199,7 +209,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SetCantLockOnActor(AActor* _cantLockOnActor)
 	{
-		m_CantLockOnActor = _cantLockOnActor;
+		if (_cantLockOnActor != nullptr)
+		{
+			m_CantLockOnActor = _cantLockOnActor;
+			m_CanLockOnActorArray.Remove(m_CantLockOnActor);
+		}
+		else
+		{
+			m_CanLockOnActorArray.Add(m_CantLockOnActor);
+			m_CantLockOnActor = nullptr;
+		}
 	}
 
 	UFUNCTION(BlueprintCallable)
