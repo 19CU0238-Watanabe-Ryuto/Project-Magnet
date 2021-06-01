@@ -2,16 +2,18 @@
 //
 // 2021/05/26 渡邊龍音 撃ち出した時の関数を作成
 // 2021/05/30 渡邊龍音 誰が撃ち出したのか分かるように
+// 2021/06/01 渡邊龍音 誰が撃ち出したのか ->誰かが持っているときに誰が持っているのか分かるように
 
 #include "ItemShootComponent.h"
 
 // Sets default values for this component's properties
 UItemShootComponent::UItemShootComponent()
 	: m_IsShoot(false)
-	, m_WhoShoot(nullptr)
+	, m_WhoHave(nullptr)
 	, m_BeginShootLocation(FVector::ZeroVector)
 	, m_NowDamage(0)
 	, m_InitialHitDamage(200)
+	, actorResetFlg(false)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -28,16 +30,33 @@ void UItemShootComponent::BeginPlay()
 void UItemShootComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (actorResetFlg && !m_IsShoot)
+	{
+		actorResetFlg = false;
+		m_WhoHave = nullptr;
+	}
+}
+
+
+// 取ったときの関数
+UFUNCTION(BlueprintCallable)
+void UItemShootComponent::GetItem(AActor* _getActor)
+{
+	m_WhoHave = _getActor;
+
+	actorResetFlg = false;
 }
 
 
 // 撃ったときの関数
-void UItemShootComponent::Shoot(FVector _shootPos, AActor* _shootPlayer)
+void UItemShootComponent::Shoot(FVector _shootPos)
 {
 	m_IsShoot = true;
 	m_BeginShootLocation = _shootPos;
-	m_WhoShoot = _shootPlayer;
 	m_NowDamage = m_InitialHitDamage;
+
+	actorResetFlg = true;
 }
 
 

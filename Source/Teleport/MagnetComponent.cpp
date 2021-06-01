@@ -30,6 +30,7 @@ UMagnetComponent::UMagnetComponent()
 	, m_LockOnActorStaticMesh(nullptr)
 	, m_SmallerActorStaticMesh(nullptr)
 	, m_AttractFloatingPoint(nullptr)
+	, m_AttractItemShootComp(nullptr)
 	, m_IsAttract(false)
 	, m_IsRepulsion(false)
 	, m_IsPressed(false)
@@ -132,11 +133,30 @@ void UMagnetComponent::SwitchAttract()
 			m_IsAttract = false;
 
 			// ロックオンActorのスタティックメッシュ取得
-			m_SmallerActorStaticMesh = Cast<UStaticMeshComponent>(m_TPSCamera->GetLockOnActor()->GetRootComponent());
+			m_SmallerActorStaticMesh = Cast<UStaticMeshComponent>(m_SmallerPlayerActor->GetRootComponent());
 
 			if (m_SmallerActorStaticMesh == nullptr)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] The RootComponent of the Actor that can be attracted must be a StaticMeshComponent."))
+			}
+
+			// ロックオンActorのItemShootComponent取得
+			m_AttractItemShootComp = Cast<UItemShootComponent>(m_SmallerPlayerActor->GetComponentByClass(UItemShootComponent::StaticClass()));
+
+			if (m_AttractItemShootComp != nullptr)
+			{
+				if (!m_AttractItemShootComp->GetAnyoneHave())
+				{
+					m_AttractItemShootComp->GetItem(m_TPSCamera->GetPlayerCharacter());
+				}
+				else
+				{
+					DisableAttractObject();
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Need to add an ItemShootComponent to an Actor that you can attract."))
 			}
 
 			UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] Move Object (Attract)"));
@@ -382,16 +402,11 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 				m_SmallerActorStaticMesh->AddImpulse(m_TPSCamera->GetCameraVectorNormalizedOtherActor(m_SmallerActorStaticMesh->GetComponentLocation()) * m_RepulsionObjectPower);
 			}
 
-			UItemShootComponent* shootComp = Cast<UItemShootComponent>(m_SmallerPlayerActor->GetComponentByClass(UItemShootComponent::StaticClass()));
 
-			if (shootComp != nullptr)
+			if (m_AttractItemShootComp != nullptr)
 			{
-				shootComp->Shoot(m_SmallerPlayerActor->GetActorLocation(), m_TPSCamera->GetPlayerCharacter());
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Need to add an \"Item Shoot\" component to an Actor that can be repelled"))
-			}			
+				m_AttractItemShootComp->Shoot(m_SmallerPlayerActor->GetActorLocation());
+			}		
 			DisableAttractObject();
 		}
 		m_IsRepulsion = false;

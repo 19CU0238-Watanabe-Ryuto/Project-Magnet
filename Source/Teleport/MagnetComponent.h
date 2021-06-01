@@ -24,6 +24,7 @@
 #include "MagnetComponent.generated.h"
 
 class UTPSCameraComponent;
+class UItemShootComponent;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class TELEPORT_API UMagnetComponent : public UActorComponent
@@ -56,6 +57,9 @@ private:
 
 	// 磁力能力で引き寄せを行ったときに固定するオブジェクトの位置
 	UStaticMeshComponent* m_AttractFloatingPoint;
+
+	// 引き寄せているオブジェクトのItemShootComponent
+	UItemShootComponent* m_AttractItemShootComp;
 
 	// 引き寄せ状態であるか
 	bool m_IsAttract;

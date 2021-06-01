@@ -73,8 +73,6 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// 一番近いActorをリセットする
 	m_NearCanLockOnActor = nullptr;
 
-	UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] Array Length : %d"), m_OnCollisionCanLockOnActorArray.Num());
-
 	// 保存しているActorの個数分ループする
 	for (AActor* lockOnActor : m_OnCollisionCanLockOnActorArray)
 	{
@@ -88,9 +86,15 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 			continue;
 		}
 
+		if (lockOnActor == GetPlayerCharacter())
+		{
+			continue;
+		}
+
 		// Actorのバウンディングボックスを取得
 		FVector bound = FVector::ZeroVector;
 		FVector ex = FVector::ZeroVector;
+
 		lockOnActor->GetActorBounds(true, bound, ex);
 
 		// Actorとの距離を計測
@@ -134,11 +138,6 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 			bool isHit = GetWorld()->LineTraceSingleByChannel(res, bound, hitPos, ECollisionChannel::ECC_Pawn, colParams);
 
-			if (isHit && res.Actor != nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] Name = %s"), *res.Actor->GetName());
-			}
-
 			// ロックオン可能範囲でかつ、カメラの角度が範囲内で、さらにレイが当たっていなければ（遮るものがない）
 			if (length < nearLength && !isHit)
 			{
@@ -147,15 +146,7 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 			}
 		}
 	}
-
-	if (m_NearCanLockOnActor != nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] Near Actor = %s (Length = %f)"), *m_NearCanLockOnActor->GetName(), nearLength);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] Near Actor is None"));
-	}
+	
 	// ロックオン処理
 	LockOn();
 }
@@ -198,8 +189,17 @@ void UTPSCameraComponent::LockOn()
 	// バウンディングボックス取得
 	FVector targetOrigin;
 	FVector targetExtent;
+	float radius;
 
-	m_LockOnActor->GetActorBounds(true, targetOrigin, targetExtent);
+	// ロックオン対象がプレイヤーのクラスであれば
+	if (m_LockOnActor->GetClass() == GetPlayerCharacter()->GetClass())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TEST : PLayer CLAss"));
+	}
+	
+	UKismetSystemLibrary::GetComponentBounds(m_LockOnActor->GetRootComponent(), targetOrigin, targetExtent, radius);
+
+	//m_LockOnActor->GetActorBounds(true, targetOrigin, targetExtent);
 
 	FVector playerPos(m_PlayerCharacter->GetActorLocation().X, m_PlayerCharacter->GetActorLocation().Y, 0.0f);
 	FVector targetPos(m_LockOnActor->GetActorLocation().X, m_LockOnActor->GetActorLocation().Y, 0.0f);
@@ -326,13 +326,14 @@ void UTPSCameraComponent::SwitchLockOn()
 			m_LockOnActor = nullptr;
 			m_IsLockOn = false;
 		}
+		/*
 		// ロックオン対象が自分自身であれば処理を終了
 		else if (m_LockOnActor == GetPlayerCharacter())
 		{
 			UE_LOG(LogTemp, Log, TEXT("[TPSCameraComponent] The player himself is the target of lock-on"));
 			m_LockOnActor = nullptr;
 			m_IsLockOn = false;
-		}
+		}*/
 	}
 }
 

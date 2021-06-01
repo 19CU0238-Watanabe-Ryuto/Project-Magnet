@@ -2,6 +2,7 @@
 //
 // 2021/05/26 渡邊龍音 撃ち出した時の関数を作成
 // 2021/05/30 渡邊龍音 誰が撃ち出したのか分かるように
+// 2021/06/01 渡邊龍音 誰が撃ち出したのか ->誰かが持っているときに誰が持っているのか分かるように
 
 #pragma once
 
@@ -28,14 +29,16 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	// 誰が撃ったのか
-	AActor* m_WhoShoot;
+	// 誰が持っているのか
+	AActor* m_WhoHave;
 
 	// 撃ち出した位置
 	FVector m_BeginShootLocation;
 
 	// 現在の威力
 	int m_NowDamage;
+
+	bool actorResetFlg;
 
 public:
 	UFUNCTION(BlueprintPure)
@@ -45,9 +48,15 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure)
-		AActor* GetWhoShoot()
+		AActor* GetWhoHave()
 	{
-		return m_WhoShoot;
+		return m_WhoHave;
+	}
+
+	UFUNCTION(BlueprintPure)
+		bool GetAnyoneHave()
+	{
+		return m_WhoHave != nullptr;
 	}
 
 public:
@@ -58,11 +67,17 @@ public:
 	int m_InitialHitDamage;
 
 public:
+	// 取ったときの関数
+	//
+	// 第一引数：オブジェクトを取ったActor
+	UFUNCTION(BlueprintCallable)
+		void GetItem(AActor* _getActor);
+
 	// 撃ったときの関数
 	//
 	// 第一引数：オブジェクトを反発させた位置
 	UFUNCTION(BlueprintCallable)
-	void Shoot(FVector _shootPos, AActor* _shootPlayer);
+		void Shoot(FVector _shootPos);
 
 	// 距離減衰の計算
 	//
