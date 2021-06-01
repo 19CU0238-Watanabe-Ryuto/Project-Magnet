@@ -134,9 +134,10 @@ public:
 	UPROPERTY(EditAnyWhere)
 		FName m_TargetOfAbilityObjectTagName;
 
-	// ボールActor
+	// ボールのタグ
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
-		TSubclassOf<AActor> m_BallActor;
+		FName m_BallTag;
+
 
 private:
 	// 引き寄せ処理関数
@@ -187,7 +188,7 @@ public:
 	{
 		if (m_SmallerPlayerActor != nullptr)
 		{
-			return m_SmallerPlayerActor->GetClass() == m_BallActor;
+			return m_SmallerPlayerActor->ActorHasTag(m_BallTag);
 		}
 		return false;
 	}

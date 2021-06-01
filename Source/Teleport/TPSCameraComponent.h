@@ -81,7 +81,7 @@ private:
 	ACharacter* m_PlayerCharacter;
 
 	// ロックオン可能Actorをすべて入れる
-	TArray<AActor*> m_CanLockOnActorArray;
+	TArray<AActor*> m_OnCollisionCanLockOnActorArray;
 
 	// 一番近いロックオン可能な距離にあるロックオン可能Actor
 	AActor* m_NearCanLockOnActor;
@@ -139,42 +139,6 @@ public:
 
 public:
 
-	// ライントレースを有効にするか（レイを飛ばすか）
-	UPROPERTY(EditAnyWhere)
-		bool m_EnableLineTrace;
-
-	// デバッグ用にレイを描画するか
-	UPROPERTY(EditAnyWhere, Category = "Debug")
-		bool m_IsDrawDebugLine;
-
-	// デバッグ用レイの表示時間
-	UPROPERTY(EditAnyWhere, Category = "Debug")
-		float m_DrawDebugLineTime;
-
-	// デバッグ用レイのロックオン時の色
-	UPROPERTY(EditAnyWhere, Category = "Debug")
-		FColor m_LockOnRayColor;
-
-	// デバッグ用レイの非ロックオン時の色
-	UPROPERTY(EditAnyWhere, Category = "Debug")
-		FColor m_NoLockOnRayColor;
-
-	// デバッグ用レイの他Actorとのヒット時の色
-	UPROPERTY(EditAnyWhere, Category = "Debug")
-		FColor m_HitRayColor;
-
-	// ロックオン可能になる最長の距離
-	UPROPERTY(EditAnyWhere)
-		float m_CanLockOnLength;
-
-	// ロックオン可能になる最長の距離
-	UPROPERTY(EditAnyWhere, meta = (ClampMin = "0", ClampMax = "90.0"))
-		float m_CanLockOnDegree;
-
-	// レイのオフセット位置
-	UPROPERTY(EditAnyWhere)
-		FVector m_RayOffset;
-
 	// ロックオンを無効化するオブジェクトとの距離
 	UPROPERTY(EditAnyWhere)
 		float m_DisableLockOnLength;
@@ -228,11 +192,11 @@ public:
 		if (_cantLockOnActor != nullptr)
 		{
 			m_CantLockOnActor = _cantLockOnActor;
-			m_CanLockOnActorArray.Remove(m_CantLockOnActor);
+			m_OnCollisionCanLockOnActorArray.Remove(m_CantLockOnActor);
 		}
 		else
 		{
-			m_CanLockOnActorArray.Add(m_CantLockOnActor);
+			m_OnCollisionCanLockOnActorArray.Add(m_CantLockOnActor);
 			m_CantLockOnActor = nullptr;
 		}
 	}

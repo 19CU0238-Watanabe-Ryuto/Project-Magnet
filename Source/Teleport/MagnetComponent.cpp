@@ -13,6 +13,9 @@
 //							  移動のやりやすさを向上
 // 2020/05/26		 渡邊龍音 プレイヤーの反発の挙動変更
 //							  ものを当てられた時の処理を追加
+// 2020/05/28		 渡邊龍音 反発移動をチャージ式に変更
+// 2020/05/30		 渡邊龍音 ボールActorを能力で持ったときにボール所持状態にする
+//							  オブジェクト引き寄せ状態を外部から解除できる関数を追加
 
 #include "MagnetComponent.h"
 #include "TPSCameraComponent.h"
@@ -35,7 +38,6 @@ UMagnetComponent::UMagnetComponent()
 	, m_IsRepulsionOfAbilityPlayer(false)
 	, m_IsAttractActorIsBall(false)
 	, m_RepulsionPlayerPower(0.0f)
-	, m_BallActor(nullptr)
 	, m_RepulsionTimer(0.0f)
 	, m_AttractPlayerPower(5.0f)
 	, m_AttractObjectPower(5.0f)
@@ -45,6 +47,7 @@ UMagnetComponent::UMagnetComponent()
 	, m_RepulsionObjectPower(1500000.0f)
 	, m_TargetOfAbilityPlayerTagName("A")
 	, m_TargetOfAbilityObjectTagName("B")
+	, m_BallTag("Ball")
 	, m_playerOriginGravityScale(0.0f)
 {
 	PrimaryComponentTick.bCanEverTick = true;
