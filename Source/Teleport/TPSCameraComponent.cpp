@@ -235,12 +235,9 @@ FVector UTPSCameraComponent::GetCameraVectorOtherActor(FVector _originPos)
 {
 	if (m_CameraComponent != nullptr)
 	{
-		// レイ開始位置
-		FVector start = m_CameraComponent->GetComponentLocation();
-
 		// レイ終了位置
 		FVector forwardVec = UKismetMathLibrary::GetForwardVector(m_CameraComponent->GetComponentRotation());
-		FVector end = start + forwardVec;
+		FVector end = _originPos + forwardVec;
 
 		FVector vector = end - _originPos;
 
