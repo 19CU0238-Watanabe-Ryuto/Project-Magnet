@@ -46,6 +46,10 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	// コリジョンを強制的に毎フレーム有効にする
+	m_BoxComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	m_BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
 	// カメラコンポーネント未設定の場合、ログを表示し関数を終了
 	if (m_CameraComponent == nullptr)
 	{
@@ -297,7 +301,7 @@ void UTPSCameraComponent::Init(UCameraComponent* _camera, ACharacter* _character
 
 
 // ロックオン状態にする関数
-void UTPSCameraComponent::SwitchLockOn()
+AActor* UTPSCameraComponent::SwitchLockOn()
 {
 	// ロックオン状態のスイッチ
 	m_IsLockOn = !m_IsLockOn;
@@ -345,6 +349,8 @@ void UTPSCameraComponent::SwitchLockOn()
 			m_IsLockOn = false;
 		}*/
 	}
+
+	return m_LockOnActor;
 }
 
 

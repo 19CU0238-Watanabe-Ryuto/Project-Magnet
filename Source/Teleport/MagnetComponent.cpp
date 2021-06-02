@@ -120,44 +120,11 @@ void UMagnetComponent::SwitchAttract()
 		// 能力対象がオブジェクトを移動させるものの場合
 		else if (m_TPSCamera->GetLockOnActor()->ActorHasTag(m_TargetOfAbilityObjectTagName))
 		{
-			// ロックオンしたオブジェクトを保存
-			m_SmallerPlayerActor = m_TPSCamera->GetLockOnActor();
-
-			// オブジェクト引き寄せ状態にする
-			m_IsAttractObject = true;
-
-			// 引き寄せているオブジェクトを一時的にロックオン不可能にする
-			m_TPSCamera->SetCantLockOnActor(m_SmallerPlayerActor);
+			// 引き寄せオブジェクトを設定
+			SetAttractObject(m_TPSCamera->GetLockOnActor());
 
 			// 引き寄せ状態を切る
 			m_IsAttract = false;
-
-			// ロックオンActorのスタティックメッシュ取得
-			m_SmallerActorStaticMesh = Cast<UStaticMeshComponent>(m_SmallerPlayerActor->GetRootComponent());
-
-			if (m_SmallerActorStaticMesh == nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] The RootComponent of the Actor that can be attracted must be a StaticMeshComponent."))
-			}
-
-			// ロックオンActorのItemShootComponent取得
-			m_AttractItemShootComp = Cast<UItemShootComponent>(m_SmallerPlayerActor->GetComponentByClass(UItemShootComponent::StaticClass()));
-
-			if (m_AttractItemShootComp != nullptr)
-			{
-				if (!m_AttractItemShootComp->GetAnyoneHave())
-				{
-					m_AttractItemShootComp->GetItem(m_TPSCamera->GetPlayerCharacter());
-				}
-				else
-				{
-					DisableAttractObject();
-				}
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Need to add an ItemShootComponent to an Actor that you can attract."))
-			}
 
 			UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] Move Object (Attract)"));
 		}
@@ -387,6 +354,9 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 	// オブジェクトを保持している
 	if (m_IsAttractObject)
 	{
+		// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
+		m_TPSCamera->DeleteCantLockOnActor(m_SmallerPlayerActor);
+
 		if (m_SmallerActorStaticMesh != nullptr)
 		{
 			// ロックオンかどうか
@@ -406,7 +376,8 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			if (m_AttractItemShootComp != nullptr)
 			{
 				m_AttractItemShootComp->Shoot(m_SmallerPlayerActor->GetActorLocation());
-			}		
+			}
+
 			DisableAttractObject();
 		}
 		m_IsRepulsion = false;
@@ -513,9 +484,15 @@ void UMagnetComponent::DisableAttractObject()
 }
 
 
-// オブジェクト引き寄せ状態を強制的に設定する
+// オブジェクト引き寄せ状態を設定する
 void UMagnetComponent::SetAttractObject(AActor* _attractActor)
 {
+	// 既に引き寄せているオブジェクトがあれば
+	if (m_SmallerPlayerActor != nullptr)
+	{
+		m_TPSCamera->DeleteCantLockOnActor(m_SmallerPlayerActor);
+	}
+
 	// ロックオンしたオブジェクトを保存
 	m_SmallerPlayerActor = _attractActor;
 

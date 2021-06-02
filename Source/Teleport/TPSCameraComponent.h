@@ -13,6 +13,8 @@
 // 2021/05/29 渡邊龍音 ロックオン対象を広げる
 // 2021/05/30 渡邊龍音 ロックオン対象をコライダーによって行うテスト
 // 2021/06/02 渡邊龍音 ロックオン不可のActorを複数設定できる様に
+//					   SwitchLockOn関数でロックオンしたActorを返すように
+//					   ロックオン可能な一番近いActor（m_NearCanLockOnActor）を取得できるように
 
 #pragma once
 
@@ -138,6 +140,10 @@ public:
 	UFUNCTION(BlueprintPure)
 		ACharacter* GetPlayerCharacter() { return m_PlayerCharacter; }
 
+	// m_NearCanLockOnActor取得用
+	UFUNCTION(BlueprintPure)
+		AActor* GetNearCanLockOnActor() { return m_NearCanLockOnActor; }
+
 public:
 
 	// ロックオンを無効化するオブジェクトとの距離
@@ -168,7 +174,7 @@ public:
 	//
 	// 引数なし
 	UFUNCTION(BlueprintCallable)
-		void SwitchLockOn();
+		AActor* SwitchLockOn();
 
 	// ロックオン状態を解除する関数
 	//

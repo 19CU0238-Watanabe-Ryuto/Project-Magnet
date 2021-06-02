@@ -202,7 +202,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void DisableAttractObject();
 
-	// オブジェクト引き寄せ状態を強制的に設定する
+	// オブジェクト引き寄せ状態を設定する
 
 	UFUNCTION(BlueprintCallable)
 		void SetAttractObject(AActor* _attractActor);
