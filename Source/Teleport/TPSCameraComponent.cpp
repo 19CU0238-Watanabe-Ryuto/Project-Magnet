@@ -60,6 +60,12 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		return;
 	}
 
+	FVector start = m_CameraComponent->GetComponentLocation();
+	FVector forwardVec = UKismetMathLibrary::GetForwardVector(m_CameraComponent->GetComponentRotation()) * m_BoxCollisionSize.X;
+	FVector end = start + forwardVec;
+
+	m_CameraVector = end - start;
+
 	// ˆê”Ô‹ß‚¢Actor‚ª‚Ç‚ê‚©ŒŸõ
 	float nearLength = m_BoxCollisionSize.X;
 
