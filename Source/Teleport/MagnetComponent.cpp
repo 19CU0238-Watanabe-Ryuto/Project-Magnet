@@ -509,7 +509,7 @@ void UMagnetComponent::DisableAttractObject()
 	m_IsAttractObject = false;
 
 	// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
-	m_TPSCamera->SetCantLockOnActor(nullptr);
+	m_TPSCamera->DeleteCantLockOnActor(m_SmallerPlayerActor);
 }
 
 
@@ -526,10 +526,29 @@ void UMagnetComponent::SetAttractObject(AActor* _attractActor)
 	m_TPSCamera->SetCantLockOnActor(m_SmallerPlayerActor);
 
 	// ロックオンActorのスタティックメッシュ取得
-	m_SmallerActorStaticMesh = Cast<UStaticMeshComponent>(_attractActor->GetRootComponent());
+	m_SmallerActorStaticMesh = Cast<UStaticMeshComponent>(m_SmallerPlayerActor->GetRootComponent());
 
 	if (m_SmallerActorStaticMesh == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] The RootComponent of the Actor that can be attracted must be a StaticMeshComponent."))
+	}
+
+	// ロックオンActorのItemShootComponent取得
+	m_AttractItemShootComp = Cast<UItemShootComponent>(m_SmallerPlayerActor->GetComponentByClass(UItemShootComponent::StaticClass()));
+
+	if (m_AttractItemShootComp != nullptr)
+	{
+		if (!m_AttractItemShootComp->GetAnyoneHave())
+		{
+			m_AttractItemShootComp->GetItem(m_TPSCamera->GetPlayerCharacter());
+		}
+		else if (m_AttractItemShootComp->GetWhoHave() != m_TPSCamera->GetPlayerCharacter())
+		{
+			DisableAttractObject();
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Need to add an ItemShootComponent to an Actor that you can attract."))
 	}
 }

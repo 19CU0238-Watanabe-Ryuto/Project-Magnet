@@ -12,6 +12,7 @@
 // 2021/05/27 渡邊龍音 他のコンポーネントからアクセスできるカメラの中央に向かうベクトルを取得できる関数を追加
 // 2021/05/29 渡邊龍音 ロックオン対象を広げる
 // 2021/05/30 渡邊龍音 ロックオン対象をコライダーによって行うテスト
+// 2021/06/02 渡邊龍音 ロックオン不可のActorを複数設定できる様に
 
 #include "TPSCameraComponent.h"
 #include "Camera/CameraComponent.h"
@@ -29,7 +30,6 @@ UTPSCameraComponent::UTPSCameraComponent()
 	, m_CollisionParams(FCollisionQueryParams::DefaultQueryParam)
 	, m_IsLockOn(false)
 	, m_LockOnActor(nullptr)
-	, m_CantLockOnActor(nullptr)
 	, m_CameraComponent(nullptr)
 	, m_PlayerCharacter(nullptr)
 	, m_NearCanLockOnActor(nullptr)
@@ -119,9 +119,9 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 		if (deg > m_CanLockOnDegree)
 		{
-			
+
 		}*/
-		
+
 		// カメラからのレイがなにも当たっていなければ
 		if (!m_IsHit)
 		{
@@ -152,7 +152,7 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 			}
 		}
 	}
-	
+
 	// ロックオン処理
 	LockOn();
 }
@@ -202,7 +202,7 @@ void UTPSCameraComponent::LockOn()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("TEST : PLayer CLAss"));
 	}
-	
+
 	UKismetSystemLibrary::GetComponentBounds(m_LockOnActor->GetRootComponent(), targetOrigin, targetExtent, radius);
 
 	//m_LockOnActor->GetActorBounds(true, targetOrigin, targetExtent);
@@ -325,12 +325,16 @@ void UTPSCameraComponent::SwitchLockOn()
 			m_LockOnActor = nullptr;
 			m_IsLockOn = false;
 		}*/
-		// 一時的にロックオン出来ないActorであれば処理を終了
-		else if (m_LockOnActor == m_CantLockOnActor)
+
+		for (AActor* ignore : m_CantLockOnActorArray)
 		{
-			UE_LOG(LogTemp, Log, TEXT("[TPSCameraComponent] This Actor(%s) is temporarily unable to lock on."), *m_LockOnActor->GetName());
-			m_LockOnActor = nullptr;
-			m_IsLockOn = false;
+			// 一時的にロックオン出来ないActorであれば処理を終了
+			if (m_LockOnActor == ignore)
+			{
+				UE_LOG(LogTemp, Log, TEXT("[TPSCameraComponent] This Actor(%s) is temporarily unable to lock on."), *m_LockOnActor->GetName());
+				m_LockOnActor = nullptr;
+				m_IsLockOn = false;
+			}
 		}
 		/*
 		// ロックオン対象が自分自身であれば処理を終了

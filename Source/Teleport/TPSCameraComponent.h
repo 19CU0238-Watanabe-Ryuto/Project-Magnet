@@ -12,6 +12,7 @@
 // 2021/05/27 渡邊龍音 他のコンポーネントからアクセスできるカメラの中央に向かうベクトルを取得できる関数を追加
 // 2021/05/29 渡邊龍音 ロックオン対象を広げる
 // 2021/05/30 渡邊龍音 ロックオン対象をコライダーによって行うテスト
+// 2021/06/02 渡邊龍音 ロックオン不可のActorを複数設定できる様に
 
 #pragma once
 
@@ -72,7 +73,7 @@ private:
 	AActor* m_LockOnActor;
 
 	// 一時的にロックオン不可にするActor
-	AActor* m_CantLockOnActor;
+	TArray<AActor*> m_CantLockOnActorArray;
 
 	// カメラコンポーネント
 	UCameraComponent* m_CameraComponent;
@@ -183,22 +184,21 @@ public:
 		bool LockOnAgain();
 
 	// ロックオン不可Actorの設定
-	// 戻り値...再設定できたかどうか
 	//
 	// 引数なし
 	UFUNCTION(BlueprintCallable)
 		void SetCantLockOnActor(AActor* _cantLockOnActor)
 	{
-		if (_cantLockOnActor != nullptr)
-		{
-			m_CantLockOnActor = _cantLockOnActor;
-			m_OnCollisionCanLockOnActorArray.Remove(m_CantLockOnActor);
-		}
-		else
-		{
-			m_OnCollisionCanLockOnActorArray.Add(m_CantLockOnActor);
-			m_CantLockOnActor = nullptr;
-		}
+		m_CantLockOnActorArray.AddUnique(_cantLockOnActor);
+	}
+
+	// ロックオン不可Actorの設定
+	//
+	// 引数なし
+	UFUNCTION(BlueprintCallable)
+		void DeleteCantLockOnActor(AActor* _cantLockOnActor)
+	{
+		m_CantLockOnActorArray.Remove(_cantLockOnActor);
 	}
 
 	UFUNCTION(BlueprintCallable)
