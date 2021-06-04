@@ -200,7 +200,7 @@ public:
 	// オブジェクト引き寄せ状態を解除する
 
 	UFUNCTION(BlueprintCallable)
-		void DisableAttractObject();
+		void DisableAttractObject(bool _resetActor = false);
 
 	// オブジェクト引き寄せ状態を設定する
 

@@ -471,16 +471,21 @@ void UMagnetComponent::Hit(AActor* _hitActor)
 
 
 // オブジェクト引き寄せ状態を解除する
-void UMagnetComponent::DisableAttractObject()
+void UMagnetComponent::DisableAttractObject(bool _resetActor /* = false */)
 {
+	// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
+	m_TPSCamera->DeleteCantLockOnActor(m_SmallerPlayerActor);
+
 	m_SmallerActorStaticMesh = nullptr;
 
 	m_SmallerPlayerActor = nullptr;
 
 	m_IsAttractObject = false;
 
-	// 引き寄せているオブジェクトの一時的ロックオン不可能の解除
-	m_TPSCamera->DeleteCantLockOnActor(m_SmallerPlayerActor);
+	if (m_AttractItemShootComp != nullptr)
+	{
+		m_AttractItemShootComp->Reset(_resetActor);
+	}
 }
 
 
