@@ -3,6 +3,7 @@
 // 2021/05/26 渡邊龍音 撃ち出した時の関数を作成
 // 2021/05/30 渡邊龍音 誰が撃ち出したのか分かるように
 // 2021/06/01 渡邊龍音 誰が撃ち出したのか ->誰かが持っているときに誰が持っているのか分かるように
+// 2021/06/04 渡邊龍音 持っているActorを外部からリセットする関数を追加
 
 #pragma once
 
@@ -95,4 +96,7 @@ public:
 	// 第四引数：減衰する威力		（○mごとに△ダメージ減る とした時の △の部分）
 	UFUNCTION(BlueprintCallable)
 		int HitAttenuationDamage(FVector _hitPos, float _attenuationRatio = 0.75f, float _attenuationDistance = 100.0f, int _attenuationAmount = 1);
+
+	UFUNCTION(BlueprintCallable)
+		void Reset(bool _resetActor = true);
 };

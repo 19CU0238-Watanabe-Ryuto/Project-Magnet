@@ -30,11 +30,10 @@ void UItemShootComponent::BeginPlay()
 void UItemShootComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	
 	if (actorResetFlg && !m_IsShoot)
 	{
-		actorResetFlg = false;
-		m_WhoHave = nullptr;
+		Reset(true);
 	}
 }
 
@@ -52,6 +51,7 @@ void UItemShootComponent::GetItem(AActor* _getActor)
 // åÇÇ¡ÇΩÇ∆Ç´ÇÃä÷êî
 void UItemShootComponent::Shoot(FVector _shootPos)
 {
+	UE_LOG(LogTemp, Warning, TEXT("SHOOT"));
 	m_IsShoot = true;
 	m_BeginShootLocation = _shootPos;
 	m_NowDamage = m_InitialHitDamage;
@@ -84,4 +84,14 @@ int UItemShootComponent::HitAttenuationDamage(FVector _hitPos, float _attenuatio
 	m_NowDamage *= _attenuationRatio;
 
 	return m_NowDamage;
+}
+
+void UItemShootComponent::Reset(bool _resetActor /* = true */)
+{
+	actorResetFlg = false;
+
+	if (_resetActor)
+	{
+		m_WhoHave = nullptr;
+	}
 }
