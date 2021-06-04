@@ -276,7 +276,11 @@ void UMagnetComponent::Attract(float _DeltaTime)
 
 		FVector lerpPos = UKismetMathLibrary::VInterpTo(m_SmallerPlayerActor->GetActorLocation(), m_AttractFloatingPoint->GetComponentLocation(), _DeltaTime, m_AttractObjectPower);
 		m_SmallerPlayerActor->SetActorLocation(lerpPos);
-		m_SmallerActorStaticMesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector, false);
+
+		if (m_SmallerActorStaticMesh != nullptr)
+		{
+			m_SmallerActorStaticMesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector, false);
+		}
 	}
 
 	// d—Í‚ğ‚Â‚¯‚é
