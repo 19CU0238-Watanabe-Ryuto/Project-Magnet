@@ -147,8 +147,23 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 			// ロックオン可能範囲でかつ、カメラの角度が範囲内であれば
 			if (length < nearLength)
 			{
-				m_NearCanLockOnActor = lockOnActor;
-				nearLength = length;
+				bool cantLockOn = false;
+
+				for (AActor* ignore : m_CantLockOnActorArray)
+				{
+					// 一時的にロックオン出来ないActorであれば処理を終了
+					if (lockOnActor == ignore)
+					{
+						cantLockOn = true;
+						break;
+					}
+				}
+
+				if (!cantLockOn)
+				{
+					m_NearCanLockOnActor = lockOnActor;
+					nearLength = length;
+				}
 			}
 		}
 		else
@@ -369,16 +384,6 @@ AActor* UTPSCameraComponent::SwitchLockOn()
 
 		m_LockOnTimer = m_FOVSmoothTime - m_LockOnTimer;
 
-		for (AActor* ignore : m_CantLockOnActorArray)
-		{
-			// 一時的にロックオン出来ないActorであれば処理を終了
-			if (m_LockOnActor == ignore)
-			{
-				UE_LOG(LogTemp, Log, TEXT("[TPSCameraComponent] This Actor(%s) is temporarily unable to lock on."), *m_LockOnActor->GetName());
-				m_LockOnActor = nullptr;
-				m_IsLockOn = false;
-			}
-		}
 		/*
 		// ロックオン対象が自分自身であれば処理を終了
 		else if (m_LockOnActor == GetPlayerCharacter())
