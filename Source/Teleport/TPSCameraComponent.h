@@ -15,6 +15,7 @@
 // 2021/06/02 渡邊龍音 ロックオン不可のActorを複数設定できる様に
 //					   SwitchLockOn関数でロックオンしたActorを返すように
 //					   ロックオン可能な一番近いActor（m_NearCanLockOnActor）を取得できるように
+// 2021/06/04 渡邊龍音 ロックオン時に断定的に画角を下げる
 
 #pragma once
 
@@ -89,6 +90,10 @@ private:
 	// 一番近いロックオン可能な距離にあるロックオン可能Actor
 	AActor* m_NearCanLockOnActor;
 
+	float m_NowFOV;
+
+	float m_LockOnTimer;
+
 	// private変数読み取り用関数
 public:
 	// m_IsHit取得用
@@ -150,6 +155,18 @@ public:
 	UPROPERTY(EditAnyWhere)
 		float m_DisableLockOnLength;
 
+	// ロックオン時にFOVをスムーズに移動させるための時間
+	UPROPERTY(EditAnyWhere)
+		float m_FOVSmoothTime;
+
+	//	普通のFOV
+	UPROPERTY(EditAnyWhere)
+		float m_NormalFOV;
+
+	// ロックオン時のFOV
+	UPROPERTY(EditAnyWhere)
+		float m_LockOnFOV;
+
 	// ロックオンできるActorにつけるタグ名
 	UPROPERTY(EditAnyWhere)
 		FName m_LockOnTag;
@@ -160,7 +177,7 @@ public:
 
 private:
 	// ロックオン処理関数
-	void LockOn();
+	void LockOn(float DeltaTime);
 
 public:
 	// 初期化関数

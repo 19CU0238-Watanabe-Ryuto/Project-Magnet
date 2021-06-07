@@ -13,6 +13,9 @@
 // 2021/05/29 渡邊龍音 ロックオン対象を広げる
 // 2021/05/30 渡邊龍音 ロックオン対象をコライダーによって行うテスト
 // 2021/06/02 渡邊龍音 ロックオン不可のActorを複数設定できる様に
+//					   SwitchLockOn関数でロックオンしたActorを返すように
+//					   ロックオン可能な一番近いActor（m_NearCanLockOnActor）を取得できるように
+// 2021/06/04 渡邊龍音 ロックオン時に断定的に画角を下げる
 
 #include "TPSCameraComponent.h"
 #include "Camera/CameraComponent.h"
@@ -33,7 +36,12 @@ UTPSCameraComponent::UTPSCameraComponent()
 	, m_CameraComponent(nullptr)
 	, m_PlayerCharacter(nullptr)
 	, m_NearCanLockOnActor(nullptr)
+	, m_NowFOV(90.0f)
+	, m_LockOnTimer(0.0f)
 	, m_DisableLockOnLength(0.0f)
+	, m_FOVSmoothTime(0.2f)
+	, m_NormalFOV(90.0f)
+	, m_LockOnFOV(50.0f)
 	, m_LockOnTag("CanLockOn")
 	, m_BoxCollisionSize(FVector(7500.0f, 100.0f, 100.0f))
 {
@@ -46,9 +54,16 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// コリジョンを強制的に毎フレーム有効にする
-	m_BoxComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	m_BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	if (m_BoxComponent != nullptr)
+	{
+		// コリジョンを強制的に毎フレーム有効にする
+		m_BoxComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		m_BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TPSCameraComponent] BoxComponent is null."))
+	}
 
 	// カメラコンポーネント未設定の場合、ログを表示し関数を終了
 	if (m_CameraComponent == nullptr)
@@ -158,7 +173,7 @@ void UTPSCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	}
 
 	// ロックオン処理
-	LockOn();
+	LockOn(DeltaTime);
 }
 
 
@@ -179,14 +194,30 @@ void UTPSCameraComponent::OnComponentOverlapEnd(UPrimitiveComponent* OverlappedC
 	}
 }
 
+
 // ロックオン処理関数
-void UTPSCameraComponent::LockOn()
+void UTPSCameraComponent::LockOn(float DeltaTime)
 {
+	m_LockOnTimer += DeltaTime;
+
+	if (m_LockOnTimer > m_FOVSmoothTime)
+	{
+		m_LockOnTimer = m_FOVSmoothTime;
+	}
+
 	// ロックオン状態でなければ処理を終了
 	if (!m_IsLockOn)
 	{
 		UE_LOG(LogTemp, Verbose, TEXT("[TPSCameraComponent] Is not lock-On."));
+
+		m_NowFOV = FMath::Lerp(m_LockOnFOV, m_NormalFOV, m_LockOnTimer / m_FOVSmoothTime);
+		m_CameraComponent->FieldOfView = m_NowFOV;
 		return;
+	}
+	else
+	{
+		m_NowFOV = FMath::Lerp(m_NormalFOV, m_LockOnFOV, m_LockOnTimer / m_FOVSmoothTime);
+		m_CameraComponent->FieldOfView = m_NowFOV;
 	}
 
 	// ロックオン対象が有効でなければ処理を終了
@@ -236,7 +267,10 @@ void UTPSCameraComponent::LockOn()
 	//FVector targetLocation = m_LockOnActor->GetActorLocation();
 	FRotator rot = UKismetMathLibrary::FindLookAtRotation(m_CameraComponent->GetComponentLocation(), targetOrigin);
 
-	m_PlayerCharacter->GetController()->SetControlRotation(rot);
+	if (m_PlayerCharacter != nullptr && m_PlayerCharacter->GetController() != nullptr)
+	{
+		m_PlayerCharacter->GetController()->SetControlRotation(rot);
+	}
 }
 
 
@@ -277,6 +311,8 @@ void UTPSCameraComponent::Init(UCameraComponent* _camera, ACharacter* _character
 	m_CameraComponent = _camera;
 	m_PlayerCharacter = _character;
 	m_BoxComponent = _boxConponent;
+
+	m_LockOnTimer = m_FOVSmoothTime;
 
 	// レイの衝突を自分自身のキャラクターに当たらないようにする
 	m_CollisionParams.AddIgnoredActor(_character);
@@ -320,6 +356,7 @@ AActor* UTPSCameraComponent::SwitchLockOn()
 		if (m_LockOnActor == nullptr)
 		{
 			m_IsLockOn = false;
+			return nullptr;
 		}
 		// ロックオン出来ないActorであれば処理を終了
 		/*
@@ -329,6 +366,8 @@ AActor* UTPSCameraComponent::SwitchLockOn()
 			m_LockOnActor = nullptr;
 			m_IsLockOn = false;
 		}*/
+
+		m_LockOnTimer = m_FOVSmoothTime - m_LockOnTimer;
 
 		for (AActor* ignore : m_CantLockOnActorArray)
 		{
@@ -349,6 +388,10 @@ AActor* UTPSCameraComponent::SwitchLockOn()
 			m_IsLockOn = false;
 		}*/
 	}
+	else
+	{
+		m_LockOnTimer = m_FOVSmoothTime - m_LockOnTimer;
+	}
 
 	return m_LockOnActor;
 }
@@ -357,6 +400,10 @@ AActor* UTPSCameraComponent::SwitchLockOn()
 // ロックオン状態を解除する関数
 void UTPSCameraComponent::DisableLockOn(bool isResetLockOnActor/* = false*/)
 {
+	if (m_IsLockOn)
+	{
+		m_LockOnTimer = m_FOVSmoothTime - m_LockOnTimer;
+	}
 	m_IsLockOn = false;
 
 	if (isResetLockOnActor)
