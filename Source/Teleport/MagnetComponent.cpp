@@ -16,6 +16,7 @@
 // 2020/05/28		 渡邊龍音 反発移動をチャージ式に変更
 // 2020/05/30		 渡邊龍音 ボールActorを能力で持ったときにボール所持状態にする
 //							  オブジェクト引き寄せ状態を外部から解除できる関数を追加
+// 2020/06/09		 渡邊龍音 オブジェクトの発射をこのクラスではなくMagnetComponentクラスで行うよう変更
 
 #include "MagnetComponent.h"
 #include "TPSCameraComponent.h"
@@ -45,7 +46,7 @@ UMagnetComponent::UMagnetComponent()
 	, m_RepulsionPlayerPowerMin(50000.0f)
 	, m_RepulsionPlayerPowerMax(250000.0f)
 	, m_RepulsionChargeTime(1.0f)
-	, m_RepulsionObjectPower(1000000.0f)
+	, m_RepulsionObjectPower(500000.0f)
 	, m_TargetOfAbilityPlayerTagName("A")
 	, m_TargetOfAbilityObjectTagName("B")
 	, m_BallTag("Ball")
@@ -103,14 +104,16 @@ void UMagnetComponent::SwitchAttract()
 			return;
 		}
 
+		AActor* lockOnActor = m_TPSCamera->GetLockOnActor();
+
 		// ロックオン解除
-		m_TPSCamera->DisableLockOn();
+		m_TPSCamera->DisableLockOn(true);
 
 		// 能力対象がプレイヤーを移動させるものの場合
-		if (m_TPSCamera->GetLockOnActor()->ActorHasTag(m_TargetOfAbilityPlayerTagName))
+		if (lockOnActor->ActorHasTag(m_TargetOfAbilityPlayerTagName))
 		{
 			// ロックオンしたオブジェクトを保存
-			m_GreaterPlayerActor = m_TPSCamera->GetLockOnActor();
+			m_GreaterPlayerActor = lockOnActor;
 
 			// プレイヤーの重力を0にする
 			//m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->GravityScale = 0.0f;
@@ -118,10 +121,10 @@ void UMagnetComponent::SwitchAttract()
 			UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] Move Player (Attract)"));
 		}
 		// 能力対象がオブジェクトを移動させるものの場合
-		else if (m_TPSCamera->GetLockOnActor()->ActorHasTag(m_TargetOfAbilityObjectTagName))
+		else if (lockOnActor->ActorHasTag(m_TargetOfAbilityObjectTagName))
 		{
 			// 引き寄せオブジェクトを設定
-			SetAttractObject(m_TPSCamera->GetLockOnActor());
+			SetAttractObject(lockOnActor);
 
 			// 引き寄せ状態を切る
 			m_IsAttract = false;
@@ -363,6 +366,8 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 
 		if (m_SmallerActorStaticMesh != nullptr)
 		{
+			/*
+			// オブジェクト発射
 			// ロックオンかどうか
 			if (m_TPSCamera != nullptr && m_TPSCamera->GetIsLockOn() && m_TPSCamera->GetLockOnActor() != nullptr)
 			{
@@ -374,12 +379,14 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 			else
 			{
 				m_SmallerActorStaticMesh->AddImpulse(m_TPSCamera->GetCameraVectorNormalizedOtherActor(m_SmallerActorStaticMesh->GetComponentLocation()) * m_RepulsionObjectPower);
-			}
+			}*/
 
 
 			if (m_AttractItemShootComp != nullptr)
 			{
-				m_AttractItemShootComp->Shoot(m_SmallerPlayerActor->GetActorLocation());
+				FVector lockOnPos = m_TPSCamera->GetIsLockOn() ? m_TPSCamera->GetLockOnLocation() : m_TPSCamera->GetRayHitLocation();
+
+				m_AttractItemShootComp->BeginShoot(m_SmallerPlayerActor->GetActorLocation(), m_RepulsionObjectPower, lockOnPos, m_TPSCamera->GetLockOnActor());
 			}
 
 			DisableAttractObject();

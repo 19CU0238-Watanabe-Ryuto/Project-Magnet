@@ -4,6 +4,7 @@
 // 2021/05/30 渡邊龍音 誰が撃ち出したのか分かるように
 // 2021/06/01 渡邊龍音 誰が撃ち出したのか ->誰かが持っているときに誰が持っているのか分かるように
 // 2021/06/04 渡邊龍音 持っているActorを外部からリセットする関数を追加
+// 2021/06/09 渡邊龍音 発射の処理を追加
 
 #pragma once
 
@@ -11,6 +12,7 @@
 #include "Components/ActorComponent.h"
 #include "ItemShootComponent.generated.h"
 
+class UProjectileMovementComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TELEPORT_API UItemShootComponent : public UActorComponent
@@ -30,16 +32,41 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	// このコンポーネントが付いているActorのスタティックメッシュ（Root）
+	UStaticMeshComponent* m_StaticMeshComp;
+
+	// このコンポーネントが付いているActorのProjectileMovement
+	UProjectileMovementComponent* m_ProjectileMovement;
+
 	// 誰が持っているのか
 	AActor* m_WhoHave;
+
+	// 発射したときのターゲットActor
+	AActor* m_ShootTargetActor;
 
 	// 撃ち出した位置
 	FVector m_BeginShootLocation;
 
+	// 発射するときのターゲット位置
+	FVector m_ShootTargetLocation;
+
 	// 現在の威力
 	int m_NowDamage;
 
-	bool actorResetFlg;
+	// 撃ち出す強さ
+	float m_ShootPower;
+
+	// シュート時のターゲットとの距離
+	float m_TargetLength;
+
+	bool m_ActorResetFlg;
+
+private:
+
+	// 撃ったときの関数
+	//
+	// 第一引数：オブジェクトを反発させた位置
+	void Shoot(float _time);
 
 public:
 	UFUNCTION(BlueprintPure)
@@ -66,7 +93,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere)
 	int m_InitialHitDamage;
-
 public:
 	// 取ったときの関数
 	//
@@ -74,11 +100,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void GetItem(AActor* _getActor);
 
-	// 撃ったときの関数
-	//
-	// 第一引数：オブジェクトを反発させた位置
+	// 撃ちはじめる関数
 	UFUNCTION(BlueprintCallable)
-		void Shoot(FVector _shootPos);
+		void BeginShoot(FVector _shootPos, float _shootPower, FVector targetPos, AActor* _lockOnActor = nullptr);
 
 	// 距離減衰の計算
 	//
