@@ -69,6 +69,9 @@ private:
 	// カメラの向いているベクトル
 	FVector m_CameraVector;
 
+	// カメラからのレイが当たっている場所
+	FVector m_RayHitLocation;
+
 	// ロックオンしているか
 	bool m_IsLockOn;
 
@@ -128,6 +131,10 @@ public:
 	// m_CameraVector取得用（正規化）
 	UFUNCTION(BlueprintPure)
 		FVector GetCameraVectorNormalizedOtherActor(FVector _originPos);
+
+	// m_NearCanLockOnActor取得用
+	UFUNCTION(BlueprintPure)
+		FVector GetRayHitLocation() { return m_RayHitLocation; }
 
 	// m_IsLockOn取得用
 	UFUNCTION(BlueprintPure)
