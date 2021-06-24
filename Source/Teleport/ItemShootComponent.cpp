@@ -89,7 +89,7 @@ void UItemShootComponent::BeginShoot(FVector _shootPos, float _shootPower, FVect
 	m_ShootTargetLocation = _targetPos;
 	m_ShootTargetActor = _targetActor;
 
-	m_TargetLength = (m_BeginShootLocation + m_ShootTargetLocation).Size2D();
+	m_TargetLength = (m_BeginShootLocation - m_ShootTargetLocation).Size2D();
 
 	//if (m_ProjectileMovement != nullptr)
 	{
@@ -120,22 +120,38 @@ void UItemShootComponent::Shoot(float _time)
 			FVector objectVector = m_StaticMeshComp->GetComponentLocation() - m_BeginShootLocation;
 
 			// cosを求める
-			float dividend = (targetVector.X * objectVector.X + targetVector.Y * objectVector.Y);
-			float divitor = FMath::Sqrt(FMath::Pow(targetVector.X, 2) + FMath::Pow(targetVector.Y, 2)) * FMath::Sqrt(FMath::Pow(objectVector.X, 2) + FMath::Pow(objectVector.Y, 2));
+			float dividend = (targetVector.X * objectVector.X + targetVector.Y * objectVector.Y + targetVector.Z * objectVector.Z);
+			float divitor = FMath::Sqrt(FMath::Pow(targetVector.X, 2) + FMath::Pow(targetVector.Y, 2) + FMath::Pow(targetVector.Z, 2)) * FMath::Sqrt(FMath::Pow(objectVector.X, 2) + FMath::Pow(objectVector.Y, 2) + FMath::Pow(objectVector.Z, 2));
 			float objectCos = dividend / divitor;
 
 			// 発射位置からオブジェクトの距離を求める
-			float objectLength = (m_BeginShootLocation + m_StaticMeshComp->GetComponentLocation()).Size2D();
+			float objectLength = (m_BeginShootLocation - m_StaticMeshComp->GetComponentLocation()).Size2D();
 			
 			// 斜辺（発射位置からオブジェクトの距離）とcosより、発射位置からオブジェクトの距離を求める
 			float length = objectLength * objectCos;
+			float ratio = length / m_TargetLength;
 
-			UE_LOG(LogTemp, Warning, TEXT("[ItemShootComponent] Target Length = %f, Pass Object Length = %f, Ratio = %f"), m_TargetLength, length, (length / m_TargetLength));
+			UE_LOG(LogTemp, Warning, TEXT("[ItemShootComponent] Target Length = %f, Pass Object Length = %f, Ratio = %f"), m_TargetLength, length, ratio);
 
 			FVector homingVector = m_ShootTargetActor->GetActorLocation() - m_StaticMeshComp->GetComponentLocation();
 			homingVector.Normalize();
 
-			m_StaticMeshComp->AddForce(homingVector * m_ShootPower);
+			if (ratio >= 0.0f && ratio <= 1.0f)
+			{
+				if (ratio > 0.2f && ratio < 0.8f)
+				{
+					float multi = FMath::Abs(ratio - 0.5f);
+					m_StaticMeshComp->AddForce(homingVector * m_ShootPower * 25.0f * multi);
+				}
+			}
+			else
+			{
+				if (ratio > 1.0f)
+				{
+					m_ShootTargetActor = nullptr;
+				}
+				UE_LOG(LogTemp, Warning, TEXT("[ItemShootComponent] OUT OF RANGE (ratio = %f)"), ratio)
+			}
 		}
 	}
 }
