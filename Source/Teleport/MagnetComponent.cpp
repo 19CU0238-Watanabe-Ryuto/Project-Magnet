@@ -17,6 +17,7 @@
 // 2020/05/30		 渡邊龍音 ボールActorを能力で持ったときにボール所持状態にする
 //							  オブジェクト引き寄せ状態を外部から解除できる関数を追加
 // 2020/06/09		 渡邊龍音 オブジェクトの発射をこのクラスではなくMagnetComponentクラスで行うよう変更
+// 2021/07/07		 渡邊龍音 磁力能力による移動を一度無効化
 
 #include "MagnetComponent.h"
 #include "TPSCameraComponent.h"
@@ -305,6 +306,8 @@ void UMagnetComponent::Attract(float _DeltaTime)
 		return;
 	}
 
+	/*
+
 	// プレイヤー引き寄せ
 	if (m_GreaterPlayerActor == nullptr)
 	{
@@ -346,6 +349,8 @@ void UMagnetComponent::Attract(float _DeltaTime)
 		FVector lerpPos = UKismetMathLibrary::VInterpTo(playerOrigin, targetPos, _DeltaTime, m_AttractPlayerPower);
 		m_TPSCamera->GetPlayerCharacter()->SetActorLocation(lerpPos, false, nullptr, ETeleportType::TeleportPhysics);
 	}
+
+	*/
 }
 
 
@@ -393,65 +398,65 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 		}
 		m_IsRepulsion = false;
 	}
-	else
-	{
-		// プレイヤーを反発させる
-		if (m_IsRepulsionOfAbilityPlayer && m_IsPressed == false)
-		{
-			m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddImpulse(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerPower);
+	//else
+	//{
+	//	// プレイヤーを反発させる
+	//	if (m_IsRepulsionOfAbilityPlayer && m_IsPressed == false)
+	//	{
+	//		m_TPSCamera->GetPlayerCharacter()->GetCharacterMovement()->AddImpulse(-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerPower);
 
-			m_GreaterPlayerActor = nullptr;
-			m_IsRepulsion = false;
+	//		m_GreaterPlayerActor = nullptr;
+	//		m_IsRepulsion = false;
 
-			/*
-			static FVector targetPos = FVector::ZeroVector;
-			if (targetPos == FVector::ZeroVector)
-			{
-				targetPos = m_TPSCamera->GetPlayerCharacter()->GetActorLocation() + (-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerAmount);
-			}
+	//		/*
+	//		static FVector targetPos = FVector::ZeroVector;
+	//		if (targetPos == FVector::ZeroVector)
+	//		{
+	//			targetPos = m_TPSCamera->GetPlayerCharacter()->GetActorLocation() + (-m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionPlayerAmount);
+	//		}
 
-			FVector lerpPos = UKismetMathLibrary::VInterpTo(m_TPSCamera->GetPlayerCharacter()->GetActorLocation(), targetPos, _DeltaTime, m_RepulsionPlayerSpeed);
+	//		FVector lerpPos = UKismetMathLibrary::VInterpTo(m_TPSCamera->GetPlayerCharacter()->GetActorLocation(), targetPos, _DeltaTime, m_RepulsionPlayerSpeed);
 
-			m_TPSCamera->GetPlayerCharacter()->SetActorLocation(lerpPos);
+	//		m_TPSCamera->GetPlayerCharacter()->SetActorLocation(lerpPos);
 
-			FVector playerPosXY = FVector(m_TPSCamera->GetPlayerCharacter()->GetActorLocation().X, m_TPSCamera->GetPlayerCharacter()->GetActorLocation().Y, 0.0f);
-			FVector targetPosXY = FVector(targetPos.X, targetPos.Y, 0.0f);
+	//		FVector playerPosXY = FVector(m_TPSCamera->GetPlayerCharacter()->GetActorLocation().X, m_TPSCamera->GetPlayerCharacter()->GetActorLocation().Y, 0.0f);
+	//		FVector targetPosXY = FVector(targetPos.X, targetPos.Y, 0.0f);
 
 
-			if (m_TPSCamera->GetPlayerCharacter()->GetActorLocation().Equals(targetPos), 1.0f)
-			{
-				targetPos = FVector::ZeroVector;
-				m_GreaterPlayerActor = nullptr;
-				m_IsRepulsion = false;
-			}*/
-		}
-		else if (m_IsPressed == true)
-		{
-			m_RepulsionTimer += _DeltaTime;
+	//		if (m_TPSCamera->GetPlayerCharacter()->GetActorLocation().Equals(targetPos), 1.0f)
+	//		{
+	//			targetPos = FVector::ZeroVector;
+	//			m_GreaterPlayerActor = nullptr;
+	//			m_IsRepulsion = false;
+	//		}*/
+	//	}
+	//	else if (m_IsPressed == true)
+	//	{
+	//		m_RepulsionTimer += _DeltaTime;
 
-			if (m_RepulsionTimer > m_RepulsionChargeTime)
-			{
-				m_RepulsionTimer = m_RepulsionChargeTime;
-			}
+	//		if (m_RepulsionTimer > m_RepulsionChargeTime)
+	//		{
+	//			m_RepulsionTimer = m_RepulsionChargeTime;
+	//		}
 
-			m_RepulsionPlayerPower = FMath::Lerp(m_RepulsionPlayerPowerMin, m_RepulsionPlayerPowerMax, m_RepulsionTimer / m_RepulsionChargeTime);
+	//		m_RepulsionPlayerPower = FMath::Lerp(m_RepulsionPlayerPowerMin, m_RepulsionPlayerPowerMax, m_RepulsionTimer / m_RepulsionChargeTime);
 
-			UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Repulsion Power = %f"), m_RepulsionPlayerPower);
-		}
-		/*
-		// オブジェクトを反発させる
-		else
-		{
-			if (m_LockOnActorStaticMesh != nullptr)
-			{
-				m_LockOnActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionObjectPower);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Don't Get ProjectileMovementComponent."));
-			}
-		}*/
-	}
+	//		UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Repulsion Power = %f"), m_RepulsionPlayerPower);
+	//	}
+	//	/*
+	//	// オブジェクトを反発させる
+	//	else
+	//	{
+	//		if (m_LockOnActorStaticMesh != nullptr)
+	//		{
+	//			m_LockOnActorStaticMesh->AddForce(m_TPSCamera->GetCameraVectorNormalized() * m_RepulsionObjectPower);
+	//		}
+	//		else
+	//		{
+	//			UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Don't Get ProjectileMovementComponent."));
+	//		}
+	//	}*/
+	//}
 }
 
 

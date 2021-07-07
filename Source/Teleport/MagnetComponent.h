@@ -17,6 +17,7 @@
 // 2020/05/30		 渡邊龍音 ボールActorを能力で持ったときにボール所持状態にする
 //							  オブジェクト引き寄せ状態を外部から解除できる関数を追加
 // 2020/06/09		 渡邊龍音 オブジェクトの発射をこのクラスではなくMagnetComponentクラスで行うよう変更
+// 2021/07/07		 渡邊龍音 磁力能力による移動を一度無効化
 
 #pragma once
 
@@ -102,7 +103,11 @@ public:
 	UFUNCTION(BlueprintPure)
 		bool GetIsAttract() { return m_IsAttract; }
 
-	// m_IsAttract取得用
+	// m_IsRepulsion取得用
+	UFUNCTION(BlueprintPure)
+		bool GetIsRepulsion() { return m_IsRepulsion; }
+
+	// m_m_SmallerPlayerActor取得用
 	UFUNCTION(BlueprintPure)
 		AActor* GetAttractActor() { return m_SmallerPlayerActor; }
 
