@@ -18,6 +18,7 @@
 //							  オブジェクト引き寄せ状態を外部から解除できる関数を追加
 // 2020/06/09		 渡邊龍音 オブジェクトの発射をこのクラスではなくMagnetComponentクラスで行うよう変更
 // 2021/07/07		 渡邊龍音 磁力能力による移動を一度無効化
+// 2021/07/16		 渡邊龍音 反発でボールを発射する際にチャージ式に変更
 
 #include "MagnetComponent.h"
 #include "TPSCameraComponent.h"
@@ -41,13 +42,15 @@ UMagnetComponent::UMagnetComponent()
 	, m_IsRepulsionOfAbilityPlayer(false)
 	, m_IsAttractActorIsBall(false)
 	, m_RepulsionPlayerPower(0.0f)
+	, m_RepulsionObjectPower(0.0f)
 	, m_RepulsionTimer(0.0f)
 	, m_AttractPlayerPower(5.0f)
 	, m_AttractObjectPower(5.0f)
 	, m_RepulsionPlayerPowerMin(50000.0f)
 	, m_RepulsionPlayerPowerMax(250000.0f)
-	, m_RepulsionChargeTime(1.0f)
-	, m_RepulsionObjectPower(500000.0f)
+	, m_RepulsionChargeTime(2.0f)
+	, m_RepulsionObjectPowerMin(100000.0f)
+	, m_RepulsionObjectPowerMax(750000.0f)
 	, m_TargetOfAbilityPlayerTagName("A")
 	, m_TargetOfAbilityObjectTagName("B")
 	, m_BallTag("Ball")
@@ -174,31 +177,29 @@ void UMagnetComponent::SwitchRepulsion()
 	if (m_IsRepulsion)
 	{
 		// ロックオン状態でなければ終了
-		if (!m_TPSCamera->GetIsLockOn() && !m_IsAttractObject)
+		/*if (!m_TPSCamera->GetIsLockOn() && !m_IsAttractObject)
 		{
 			UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] The Repulsion button was pressed but not lock-on."));
 
 			m_IsRepulsion = false;
 			return;
-		}
+		}*/
 
 		// ロックオン解除
-		m_TPSCamera->DisableLockOn();
+		//m_TPSCamera->DisableLockOn();
 
-		// 能力対象がプレイヤーを移動させるものの場合
-		if (m_TPSCamera->GetLockOnActor() != nullptr && m_TPSCamera->GetLockOnActor()->ActorHasTag(m_TargetOfAbilityPlayerTagName))
-		{
-			// ロックオンしたオブジェクトを保存
-			m_GreaterPlayerActor = m_TPSCamera->GetLockOnActor();
+		//// 能力対象がプレイヤーを移動させるものの場合
+		//if (m_TPSCamera->GetLockOnActor() != nullptr && m_TPSCamera->GetLockOnActor()->ActorHasTag(m_TargetOfAbilityPlayerTagName))
+		//{
+		// ロックオンしたオブジェクトを保存
+		//m_GreaterPlayerActor = m_TPSCamera->GetLockOnActor();
 
 			// プレイヤーを反発させる状態にする
-			m_IsRepulsionOfAbilityPlayer = true;
+		//m_IsRepulsionOfAbilityPlayer = true;
 
-			// ボタンを押した状態にする
-			m_IsPressed = true;
-
-			UE_LOG(LogTemp, Verbose, TEXT("[MagnetComponent] Move Player (Repulsion)"));
-		}
+		// ボタンを押した状態にする
+		m_IsPressed = true;
+		//}
 		/*
 		// 能力対象がオブジェクトを移動させるものの場合
 		else if (m_TPSCamera->GetLockOnActor()->ActorHasTag(m_TargetOfAbilityObjectTagName))
@@ -386,17 +387,36 @@ void UMagnetComponent::Repulsion(float _DeltaTime)
 				m_SmallerActorStaticMesh->AddImpulse(m_TPSCamera->GetCameraVectorNormalizedOtherActor(m_SmallerActorStaticMesh->GetComponentLocation()) * m_RepulsionObjectPower);
 			}*/
 
-
-			if (m_AttractItemShootComp != nullptr)
+			//-------------------------------------------------------------------------------------------------------------
+			if (m_IsPressed == false)
 			{
-				FVector lockOnPos = m_TPSCamera->GetIsLockOn() ? m_TPSCamera->GetLockOnLocation() : m_TPSCamera->GetRayHitLocation();
 
-				m_AttractItemShootComp->BeginShoot(m_SmallerPlayerActor->GetActorLocation(), m_RepulsionObjectPower, lockOnPos, m_TPSCamera->GetLockOnActor());
+				if (m_AttractItemShootComp != nullptr)
+				{
+					FVector lockOnPos = m_TPSCamera->GetIsLockOn() ? m_TPSCamera->GetLockOnLocation() : m_TPSCamera->GetRayHitLocation();
+
+					m_AttractItemShootComp->BeginShoot(m_SmallerPlayerActor->GetActorLocation(), m_RepulsionObjectPower, lockOnPos, m_TPSCamera->GetLockOnActor());
+				}
+
+				DisableAttractObject();
+				m_IsRepulsion = false;
 			}
+			else
+			{
+				m_RepulsionTimer += _DeltaTime;
 
-			DisableAttractObject();
+				if (m_RepulsionTimer > m_RepulsionChargeTime)
+				{
+					m_RepulsionTimer = m_RepulsionChargeTime;
+				}
+
+				m_RepulsionObjectPower = FMath::Lerp(m_RepulsionObjectPowerMin, m_RepulsionObjectPowerMax, m_RepulsionTimer / m_RepulsionChargeTime);
+
+				UE_LOG(LogTemp, Warning, TEXT("[MagnetComponent] Repulsion Power = %f"), m_RepulsionObjectPower);
+			}
+			//-------------------------------------------------------------------------------------------------------------
+
 		}
-		m_IsRepulsion = false;
 	}
 	//else
 	//{

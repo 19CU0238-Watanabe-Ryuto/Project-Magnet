@@ -18,6 +18,7 @@
 //							  オブジェクト引き寄せ状態を外部から解除できる関数を追加
 // 2020/06/09		 渡邊龍音 オブジェクトの発射をこのクラスではなくMagnetComponentクラスで行うよう変更
 // 2021/07/07		 渡邊龍音 磁力能力による移動を一度無効化
+// 2021/07/16		 渡邊龍音 反発でボールを発射する際にチャージ式に変更
 
 #pragma once
 
@@ -87,8 +88,11 @@ private:
 	// プレイヤーのもともとのgravityScale
 	float m_playerOriginGravityScale;
 
-	// 反発の力
+	// プレイヤー反発の力
 	float m_RepulsionPlayerPower;
+
+	// オブジェクト反発の力
+	float m_RepulsionObjectPower;
 
 	// 反発のチャージ時間測定用
 	float m_RepulsionTimer;
@@ -128,13 +132,17 @@ public:
 	UPROPERTY(EditAnyWhere)
 		float m_RepulsionPlayerPowerMax;
 
-	// オブジェクトに対してプレイヤーが反発する最大の力
+	// 反発のチャージにかける時間
 	UPROPERTY(EditAnyWhere)
 		float m_RepulsionChargeTime;
 
-	// プレイヤーがオブジェクトを反発させる力
+	// プレイヤーがオブジェクトを反発させる最小の力
 	UPROPERTY(EditAnyWhere)
-		float m_RepulsionObjectPower;
+		float m_RepulsionObjectPowerMin;
+
+	// プレイヤーがオブジェクトを反発させる最大の力
+	UPROPERTY(EditAnyWhere)
+		float m_RepulsionObjectPowerMax;
 
 	//  能力の対象がプレイヤーの時のオブジェクトのタグ名
 	UPROPERTY(EditAnyWhere)

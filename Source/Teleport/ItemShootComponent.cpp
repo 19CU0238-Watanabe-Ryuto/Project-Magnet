@@ -109,6 +109,8 @@ void UItemShootComponent::Shoot(float _time)
 	// 発射状態であれば
 	if (m_IsShoot)
 	{
+		// パス
+		/*
 		// 発射位置と目的地を結んだ線に直交する、オブジェクトから伸ばした線の長さを計算
 		float orthogonalLineLength = FMath::Abs((m_ShootTargetLocation + m_BeginShootLocation).Size2D());
 		if (m_ShootTargetActor != nullptr)
@@ -153,6 +155,7 @@ void UItemShootComponent::Shoot(float _time)
 				UE_LOG(LogTemp, Warning, TEXT("[ItemShootComponent] OUT OF RANGE (ratio = %f)"), ratio)
 			}
 		}
+		*/
 	}
 }
 
