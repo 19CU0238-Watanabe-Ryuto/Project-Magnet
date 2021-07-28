@@ -1,10 +1,13 @@
 // 壁を生成するクラス
 //
 // 2021/07/14 壁をプレイヤーの前に生成する機能のみ実装
+// 2021/07/28 回数制限を持たせる
 
 #include "WallSpawnComponent.h"
 
 UWallSpawnComponent::UWallSpawnComponent()
+	: m_SpawnCount(0)
+	, m_SpawnNum(1)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
@@ -26,7 +29,11 @@ void UWallSpawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 AActor* UWallSpawnComponent::SpawnWall(const FVector pos, const FRotator rot)
 {
-	return SpawnActor(m_WallActor, pos, rot);
+	if (m_SpawnCount < m_SpawnNum)
+	{
+		return SpawnActor(m_WallActor, pos, rot);
+	}
+	return nullptr;
 }
 
 // 攻撃を行うActor(TSubclassOf<>)を生成
@@ -49,6 +56,7 @@ AActor* UWallSpawnComponent::SpawnActor(const TSubclassOf<AActor> _Actor, const 
 	// 攻撃Actorの生成
 	if (_Actor != nullptr)
 	{
+		m_SpawnCount++;
 		return GetWorld()->SpawnActor<AActor>(_Actor, _Pos, _Rot, params);
 	}
 	else
